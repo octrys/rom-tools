@@ -41,9 +41,31 @@ python3 patch_downloader.py --component launcher
 
 Standard library only. Details in [`patcher/README.md`](patcher/README.md).
 
+### [`client/`](client/) — client host redirect
+
+Adjust the client's `global-metadata.dat` and `resources.assets` so the game
+resolves its infrastructure hosts to your own server instead of
+`patch.romgoldenage.com` / `auth.romgoldenage.com`. The patch/CDN host lives in
+two places — an IL2CPP string literal (base A) and a Unity
+`ProjectSettingData_Crypto_Win_Live` string (base B); `resources.assets` also
+holds the auth host string. `resources_host.py` rewrites the patch and auth
+strings in a single pass (`--patch-host` / `--auth-host`). Everything is edited in
+place, emitting a patched copy without ever overwriting the source.
+
+```bash
+# base A — metadata literal
+python3 client/metadata_host.py global-metadata.dat --new-host 192.168.1.50 --out global-metadata.patched.dat
+
+# base B — resources.assets (patch + auth hosts, each exact byte length; no padding)
+python3 client/resources_host.py resources.assets --patch-host patch.example.internal --auth-host auth.example.internal --out resources.assets.patched
+```
+
+Standard library only. Details in [`client/README.md`](client/README.md).
+
 ## Layout
 
 ```
+client/              client host redirect (metadata + resources)
 launcher/            launcher config decrypt/encrypt
 patcher/             patch-server mirror downloader
 resources/launcher/  launcher configs (encrypted + decrypted)
