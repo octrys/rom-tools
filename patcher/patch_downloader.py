@@ -50,6 +50,7 @@ COMPONENTS = ("launcher", "patch")
 EXTRA_FILES = (
     "real/ROMGoldenAge_WemixPay_Crypto.json",
     "real/maintenances.json",
+    "real/domaindata.json",
     "real/patch/Windows/table.dat",
     "real/patch/Windows/AssetBundlesVersion.txt",
     "real/patch/Windows/bundlegamedata.dat",
