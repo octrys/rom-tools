@@ -19,6 +19,80 @@
 [global]
 DNIEOGFIAHC = "id"
 
+# ---- enums ----------------------------------------------------------------
+# Keyed by the obfuscated *enum type* name. Enum member names are NOT obfuscated,
+# so an enum type is self-describing (e.g. IG_NONE/IG_RARE/IG_EPIC -> a grade);
+# naming it once names every field of that type across all tables. This is the
+# lowest-priority scope — a per-table/type/global entry always wins, and if two
+# fields of one struct share an enum the second keeps its obfuscated name.
+# Only enums whose members give an unambiguous field name are listed; the rest
+# stay obfuscated. Members are noted in the comment for auditing.
+[enums]
+GNNNHFEOIOD = "itemGrade"        # IG_NORMAL/MAGICAL/RARE/EPIC/LEGENDARY
+LKPBDKHLHEM = "itemGrade"        # IG_* (second grade enum)
+EDOKDBFDFKA = "payType"          # PT_ACCOUNT_MONEY/PLAYER_MONEY/GUILD_MONEY/EXP
+PDINAHEGFEI = "equipSlot"        # ES_WEAPON/HEAD/INNER/SUIT/VAMBRACER
+MPHNMIIFECH = "weaponType"       # SWORD/BOW/STAFF/SPEAR/DAGGER
+LHOBCBHOHJL = "weaponType"       # WT_FIST/SWORD/BOW/STAFF/SPEAR
+IPOLELNHOFN = "currencyType"     # GOLD/DIA/EVENT_DIA/MILEAGE/CRYSTAL
+HJALPEEOLAH = "dayOfWeek"        # Sunday/Monday/Tuesday/...
+AGLACHBPDCB = "classType"        # PC_KNIGHT/RANGER/MAGICIAN
+KGCILLKFBEN = "periodType"       # Day/Week/Month/Infinite/FixPeriod
+LFOHLNNOFDC = "statType"         # EOT_STR/CON/DEX/INT/WIZ
+MDMKAKALOOE = "questMissionType" # QMT_MONSTER_KILL/PK_KILL/NPC_TALK/ENTER_MAP
+BODCHEOCGCE = "npcType"          # NT_SHOP/EVENT/GUILD_SHOP/HONOR_SHOP/WAREHOUSE
+OCOPGEPOLPA = "mapType"          # MT_METROPOLIS/FIELD/TIME_DUNGEON/FIELD_DUNGEON
+JOMLNJBBGOI = "alignment"        # PA_LAW_ABIDING/ORDERLY/NORMAL/CHAOS/DECIMATOR
+IHFOCPECMAD = "objectType"       # OT_ACTOR_PLAYER/MONSTER/NPC_NORMAL/DROP_ITEM
+AKCNFAGIDII = "classRole"        # PSC_DEFENDER/BERSERKER/VANGUARD/HUNTER/SCOUT
+NEHIMBPCOJP = "itemType"         # IT_WEAPON/ARMOR/ACCESSARY/CONSUMPTION_USE
+AHFFCNKAEJJ = "itemCategory"     # EQUIP/MATERIAL/EVENT
+FEPAFIHNNNC = "monsterRace"      # MK_UNDEAD/DEMON/SPIRIT/BEAST/HUMANOID
+EFNHPAPMHHD = "categoryType"     # CategoryType_Area/Boss
+MFEJJACLNNG = "teamType"         # ESWTT_DEFENDER_TEAM/ATTACKER_A_TEAM/...
+MKHGJDFHBIN = "skillType"        # ST_Attack/Buff/Debuff/Passive/Summon
+FIDCHGKPGCC = "skillType"        # SK_ATTACK/BUFF/DEBUFF/PASSIVE/STATUS
+KKDAFHCBOFH = "skillCategory"    # SAS_BASE_SKILL/MAGIC_SKILL/PHYSICAL_SKILL
+NBPBOBDBPEN = "skillSource"      # SUK_PlayerSkill/MapSkill/ItemSkill/PetSkill
+GEHJPJMAOKN = "targetType"       # STT_SELF/TARGET/TARGET_POSITION
+PHPDPBMMMJH = "motionState"      # Stand/Walk/Run/Casting/Attack
+HEPJLCGFOKH = "buffType"         # BT_BUFF/DEBUFF/DOT/CONDITION
+KPGFNOLLBNI = "statusEffect"     # POISON/BLEED/BURN/STUN/SLEEP
+PGEFBMCJBAC = "attribute"        # Attribute_Fire/Water/Wind/Earth
+JPKJNPFJCDO = "attribute"        # FIRE/WATER/WIND/GROUND
+HMIABKOBALJ = "contributionType" # TOTAL_POINT/GUILD_DONATION_GOLD/CASH/CRYSTAL
+DNEEFHNBJGC = "openType"         # LegacyCollectionOpenType_*
+GNPHDCKOHPP = "openType"         # SoulStoneOpenType_*
+PFKOCDLANEA = "helpType"         # HT_Tooltip/Popup/WebView/GameNotic
+IBPEJMJNANN = "rankType"         # RankType_Contribution/Kill/TotalDPS
+IBFFIIFLNIC = "warpType"         # WT_Quest/World/Dungeon/Portal/Teleport
+NPHFGKDNNHH = "monsterType"      # MT_BOSS/WORLD_BOSS/DEFEND_TOWER
+BHDJKANINCN = "buttonType"       # Btn_GeneralShop/Storage/SkllShop/GuildShop
+JFKPBKHHMHL = "siegeObjectType"  # ESWOST_CASTLE_STONE/GUARD_STONE/CASTLE_GATE
+NavMeshObstacleShape = "obstacleShape"  # Capsule/Box
+EFAKOKDIFOB = "ownerType"        # E_Character/E_Account/E_Guild
+ECIBHBKBOGI = "ownerScope"       # Character/ServerAccount/GlobalAccount
+EJFKPDIJHFF = "questTargetType"  # QIT_ACTOR_NPC/MONSTER/OBJECT_INTERACTION
+AAIHPGFFNAB = "region"           # CALDES/AMOS/COURNA/ELGHASIA/DESPAIR
+HPPGEMBPFAI = "limitType"        # STLimitedType_Item_Count/Player_Slot/...
+GFCCGGBJBJJ = "transformType"    # TransformType_All/Charater/Guild
+KHMCAGDFBAF = "storeOrderType"   # StoreOrder_InApp_Only/InGame_Only/Sequence
+JEOAHGDNAOA = "productType"      # General/Pet/Costume/Package/Money
+INHPFLHLNMA = "serverType"       # Global/Crypto_Wemix/Crypto_Cross
+KOEFCECEIMA = "strongholdType"   # Stronghold_Link_Free/Link_Map
+NDGDJKDCCDP = "spawnType"        # Appear_Time_Spawn/Point_Spawn/Kill_Create
+ECCGAFDNDAL = "position"         # Top/Middle/Bottom/Front/Back
+NNKCNELNPLK = "bindType"         # IOT_BELONG/BELONG_CHAR
+LIKHCCHJIHD = "itemAttribute"    # IA_Corrupted/Radiant/Mystic/SET_FOUR
+FKDIKKAPEMJ = "missionLimitType" # MLT_Time/Count/ClearCount/WaveReward
+AJDPGBOGPAP = "objectState"      # OST_On/Off/Quest
+BOMKFGIEKHJ = "actionType"       # OAT_Return/Delete
+CLCHHNCGCLN = "displayType"      # DPY_NORMAL/DEALING_TIME
+CMHLLFGEIHL = "battleZoneType"   # BT_SAFTY/PRECAUSION/DISPUTE/VILLAGE
+JCLMJCIFIJP = "guardType"        # ANT_GUARD/SIEGE_GUARD
+LFKOAKOGJBP = "dialogType"       # Chatting/QuestWindow/SpeechBubble/NPCInfo
+MAOFOCFBMFG = "destroyType"      # Death_Ani/Destroy_FIRE/ICE/LIGHTNING
+
 # ---- shared nested structs ------------------------------------------------
 
 # {codename, scene, dataScene} scene-bundle reference.

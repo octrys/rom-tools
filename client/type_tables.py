@@ -78,9 +78,11 @@ class Namer:
         # mapping["global"] = {obf: friendly}                  (consistent across the codebase)
         # mapping["types"][<TypeShortName>] = {obf: friendly}  (shared structs)
         # mapping["tables"][<table>] = {obf: friendly}
+        # mapping["enums"] = {<EnumShortName>: friendly}       (name any field of this enum type)
         self.global_names: dict[str, str] = mapping.get("global", {})
         self.tables: dict[str, dict[str, str]] = mapping.get("tables", {})
         self.types: dict[str, dict[str, str]] = mapping.get("types", {})
+        self.enums: dict[str, str] = mapping.get("enums", {})
 
     def lookup(self, table: str, owner_type_short: str, obf: str) -> str | None:
         # Most specific wins: per-table, then shared struct, then the global
@@ -92,8 +94,10 @@ class Namer:
             friendly = self.global_names.get(obf)
         return friendly
 
-    def name(self, table: str, owner_type_short: str, obf: str) -> str:
-        return self.lookup(table, owner_type_short, obf) or obf
+    def enum_name(self, enum_type_short: str) -> str | None:
+        # Enum *members* are not obfuscated, so an enum type is self-describing;
+        # naming it once names every field of that type across all tables.
+        return self.enums.get(enum_type_short)
 
 
 class Converter:
@@ -124,7 +128,13 @@ class Converter:
         for fname, ftype in info.fields:
             if fname not in value:
                 continue
-            friendly = self.namer.name(table, short, fname)
+            friendly = self.namer.lookup(table, short, fname)
+            if friendly is None and ftype in self.schema.enums:
+                friendly = self.namer.enum_name(self.schema.short(ftype))
+            # Fall back to the obfuscated name, and never clobber a sibling that
+            # already claimed the same friendly name (e.g. two fields of one enum).
+            if friendly is None or friendly in out:
+                friendly = fname
             out[friendly] = self.resolve_value(value[fname], ftype, table)
         # Preserve any keys the schema did not mention (defensive).
         for extra in value:
@@ -157,7 +167,10 @@ class Converter:
                 key = (short, fname)
                 if key not in seen:
                     seen.add(key)
-                    out.append((short, fname, self.namer.lookup(table, short, fname) is not None))
+                    is_named = self.namer.lookup(table, short, fname) is not None
+                    if not is_named and ftype in self.schema.enums:
+                        is_named = self.namer.enum_name(self.schema.short(ftype)) is not None
+                    out.append((short, fname, is_named))
                 walk(ftype, stack | {type_name})
 
         walk(row_type, frozenset())

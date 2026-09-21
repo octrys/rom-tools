@@ -94,11 +94,14 @@ integers — and makes it readable:
    are *not* obfuscated), e.g. `2 → "MT_FIELD"`, using the type model parsed
    from `rom_dump.cs`.
 2. **Field naming** — obfuscated names are renamed via
-   [`table_names.toml`](table_names.toml), a curated map with two scopes:
-   `[types.<Struct>]` (shared nested value types, named once) and
-   `[tables.<Table>]` (a table's top-level fields). Unmapped fields keep their
-   obfuscated name — nothing is lost — and `_coverage.json` tracks progress so
-   naming can be driven table by table.
+   [`table_names.toml`](table_names.toml), a curated map with four scopes,
+   most specific first: `[tables.<Table>]` (a table's top-level fields),
+   `[types.<Struct>]` (shared nested value types, named once), `[enums]`
+   (keyed by the obfuscated enum *type* — since enum members aren't obfuscated,
+   naming an enum once names every field of that type across all tables), and
+   `[global]` (an identifier the obfuscator reuses everywhere). Unmapped fields
+   keep their obfuscated name — nothing is lost — and `_coverage.json` tracks
+   progress so naming can be driven top-down (see `libs/profile_fields.py`).
 
 Config-driven ([`type_tables.toml`](type_tables.toml)), standard library only
 (Python 3.11+ for `tomllib`). Reads the frida artifacts, so run those first (see
@@ -111,9 +114,27 @@ python3 type_tables.py            # reads ./type_tables.toml
 
 Writes one typed `<Table>.json` per table into the configured output dir, plus
 `_coverage.json` (named vs. obfuscated fields per table). Shared internal code
-lives in [`libs/`](libs/): `libs/table_schema.py` (the dump parser, imported by
-the tool) and `libs/inspect_table.py` (a dev helper that dumps a table's fields
-+ sample values to drive naming — `python3 -m libs.inspect_table <Table>`).
+lives in [`libs/`](libs/):
+
+- `libs/table_schema.py` — the dump parser, imported by the tool.
+- `libs/inspect_table.py` — dev helper that dumps one table's fields + sample
+  values to drive naming: `python3 -m libs.inspect_table <Table>`.
+- `libs/profile_fields.py` — dev helper that profiles **all** tables at once.
+  Because the obfuscation is consistent (one original name → one obfuscated
+  string everywhere), the naming unit is the set of distinct `(struct, field)`
+  pairs, not the tables. It aggregates each field's type, how many tables use it,
+  sample values, and whether `table_names.toml` already names it, then ranks the
+  unnamed ones by impact (tables, then rows) so naming can go top-down —
+  highest-frequency fields first. Enum fields are especially informative, since
+  their member names aren't obfuscated (`PT_ITEM`, `EOT_MAX_HP`, …).
+
+  ```bash
+  python3 -m libs.profile_fields             # ranked unnamed fields (top 60)
+  python3 -m libs.profile_fields --limit 40  # top N unnamed
+  python3 -m libs.profile_fields --all       # include already-named fields
+  ```
+
+  Also writes the full profile to `<output>/_fields.json` for programmatic use.
 
 ## extract_protocol.py — network-protocol catalog → JSON
 
