@@ -1,7 +1,8 @@
 # rom-tools
 
 Tools for the **ROM: Golden Age** client and launcher — decrypting launcher
-config and mirroring files from the official patch server.
+config, mirroring files from the official patch server, redirecting the client's
+infrastructure hosts, and extracting the game's data tables to JSON.
 
 ## Tools
 
@@ -41,16 +42,19 @@ python3 patch_downloader.py --component launcher
 
 Standard library only. Details in [`patcher/README.md`](patcher/README.md).
 
-### [`client/`](client/) — client host redirect
+### [`client/`](client/) — host redirect + data extraction
 
-Adjust the client's `global-metadata.dat` and `resources.assets` so the game
-resolves its infrastructure hosts to your own server instead of
-`patch.romgoldenage.com` / `auth.romgoldenage.com`. The patch/CDN host lives in
-two places — an IL2CPP string literal (base A) and a Unity
+Two jobs, detailed in [`client/README.md`](client/README.md):
+
+**Host redirect** — adjust the client's `global-metadata.dat` and
+`resources.assets` so the game resolves its infrastructure hosts to your own
+server instead of `patch.romgoldenage.com` / `auth.romgoldenage.com`. The
+patch/CDN host lives in two places — an IL2CPP string literal (base A) and a Unity
 `ProjectSettingData_Crypto_Win_Live` string (base B); `resources.assets` also
 holds the auth host string. `resources_host.py` rewrites the patch and auth
 strings in a single pass (`--patch-host` / `--auth-host`). Everything is edited in
-place, emitting a patched copy without ever overwriting the source.
+place, emitting a patched copy without ever overwriting the source. Standard
+library only.
 
 ```bash
 # base A — metadata literal
@@ -60,14 +64,27 @@ python3 client/metadata_host.py global-metadata.dat --new-host 192.168.1.50 --ou
 python3 client/resources_host.py resources.assets --patch-host patch.example.internal --auth-host auth.example.internal --out resources.assets.patched
 ```
 
-Standard library only. Details in [`client/README.md`](client/README.md).
+**Data extraction** — `extract_tables.py` reads the game's data tables (maps,
+warps, world map, …) from the original CDN bundles in a local patch mirror
+(`resources/patch`, see the patcher) and exports them as JSON for the server. It
+is config-driven ([`extract_tables.toml`](client/extract_tables.toml)), not CLI,
+and needs UnityPy (use a venv).
+
+```bash
+cd client && python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+python3 extract_tables.py            # reads ./extract_tables.toml
+```
 
 ## Layout
 
 ```
-client/              client host redirect (metadata + resources)
+client/              client host redirect + game-data table extraction
+client/tables/       extracted data tables (JSON), one file per table
 launcher/            launcher config decrypt/encrypt
 patcher/             patch-server mirror downloader
+resources/patch/     mirrored patch tree (real/patch/Windows/*.unity) — extractor input
+resources/client/    full client install (GameAssembly.dll, ROMGoldenAge_Data, cache/)
 resources/launcher/  launcher configs (encrypted + decrypted)
 tmp/                 scratch for bulk patch downloads (git-ignored)
 ```

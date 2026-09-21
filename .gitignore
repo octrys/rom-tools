@@ -4,3 +4,4 @@ tmp/
 # Python
 __pycache__/
 *.py[cod]
+.venv/

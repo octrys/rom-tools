@@ -1,6 +1,10 @@
 # client
 
-Tools for adjusting the ROM: Golden Age **client** files.
+Tools for the ROM: Golden Age **client** — redirecting its infrastructure hosts
+(`metadata_host.py`, `resources_host.py`) and extracting its game data tables to
+JSON (`extract_tables.py`).
+
+## Host redirect
 
 The retail client resolves its CDN host from **two** places, and every bootstrap
 URL (patch manifest, `domaindata.json`, auth, game server) derives from one of
@@ -75,6 +79,37 @@ python3 resources_host.py resources.assets \
 
 Swap in at `client/ROMGoldenAge_Data/resources.assets`.
 
+## extract_tables.py — game data tables → JSON
+
+Exports the game's static data tables (maps, warps, world map, …) to JSON, for
+the server to consume. It reads the **original CDN bundles from a local mirror of
+the patch tree** (`real/patch/Windows/*.unity`, e.g. mirrored by the patcher) —
+it never fetches online. The game-data tables live in `tablecrypto.unity` as
+`C_*` TextAssets — despite the bundle name the content is **plaintext**, in a
+custom little-endian binary format (see the module docstring for the layout). The
+run is stamped with the patch's `AssetBundlesVersion.txt`.
+
+Unlike the tools above it is **config-driven, not CLI**: edit
+[`extract_tables.toml`](extract_tables.toml) (patch-mirror path, output dir,
+bundle, table names) and run it. It needs UnityPy (not stdlib), so use a venv:
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+python3 extract_tables.py            # reads ./extract_tables.toml
+```
+
+Writes one `<Table>.json` per table into the configured output dir (the map count
+varies by patch version):
+
+- **`Map_Data.json`** — typed: `id`, `mapId`, `subType`, `name`, `category`,
+  `scene_bundle`, `minimap`. `mapId ≈ 2000000 + id*10 + 1` for the main series;
+  special ranges (metropolis, war, citadels) differ, so it is read.
+- **Other tables** — generic decode (`key`, `head_u32`, `strings`) until their
+  columns are reversed. Add a typed decoder to `DECODERS` to promote one.
+
 ## Requirements
 
-- Python 3.8+ (standard library only)
+- `metadata_host.py`, `resources_host.py`: Python 3.8+ (standard library only)
+- `extract_tables.py`: Python 3.11+ (`tomllib`) + UnityPy (`requirements.txt`;
+  `.venv/` is git-ignored)
