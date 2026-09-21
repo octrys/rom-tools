@@ -1,8 +1,9 @@
 # client
 
 Tools for the ROM: Golden Age **client** — redirecting its infrastructure hosts
-(`metadata_host.py`, `resources_host.py`) and extracting its game data tables to
-JSON (`extract_tables.py`).
+(`metadata_host.py`, `resources_host.py`), extracting its game data tables to
+JSON (`extract_tables.py`), and rebuilding the network-protocol catalog
+(`extract_protocol.py`).
 
 ## Host redirect
 
@@ -108,8 +109,38 @@ varies by patch version):
 - **Other tables** — generic decode (`key`, `head_u32`, `strings`) until their
   columns are reversed. Add a typed decoder to `DECODERS` to promote one.
 
+## extract_protocol.py — network-protocol catalog → JSON
+
+Rebuilds the message catalog the server speaks: **985 messages** with opcodes,
+ordered field names, and field types. It merges two client artifacts:
+
+| Source | Gives | Why it's needed |
+|---|---|---|
+| `global-metadata.dat` | message classes, `__ID__` opcodes, ordered field names | clean (unencrypted) on PC, parsed directly — no il2cpp dumper (the binary is Themida-packed) |
+| `rom_dump.json` | each field's **type** | the type table lives inside the packed `GameAssembly.dll`, decrypted only at runtime, so types can't be read statically — this is a frida-il2cpp-bridge dump |
+
+Like `extract_tables.py` it is **config-driven, not CLI**: edit
+[`extract_protocol.toml`](extract_protocol.toml) (metadata, dump, output paths)
+and run it. Standard library only, but needs `tomllib` (Python 3.11+).
+
+```bash
+python3 extract_protocol.py            # reads ./extract_protocol.toml
+```
+
+Writes into the configured output dir:
+
+- **`messages.json` / `messages.md`** — opcodes + ordered field names (metadata
+  alone; ~80% of the protocol).
+- **`messages_typed.json` / `messages_typed.md`** — the above plus field types
+  (metadata + dump). Leave `[paths].dump = ""` to emit the untyped catalog only.
+
+**A client update rotates every opcode** (the body serialization stays identical),
+so after an update re-point `[paths].metadata` at the new `global-metadata.dat`
+and re-run to remigrate the catalog.
+
 ## Requirements
 
 - `metadata_host.py`, `resources_host.py`: Python 3.8+ (standard library only)
 - `extract_tables.py`: Python 3.11+ (`tomllib`) + UnityPy (`requirements.txt`;
   `.venv/` is git-ignored)
+- `extract_protocol.py`: Python 3.11+ (`tomllib`), standard library only
