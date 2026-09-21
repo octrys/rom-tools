@@ -106,8 +106,11 @@ varies by patch version):
 - **`Map_Data.json`** — typed: `id`, `mapId`, `subType`, `name`, `category`,
   `scene_bundle`, `minimap`. `mapId ≈ 2000000 + id*10 + 1` for the main series;
   special ranges (metropolis, war, citadels) differ, so it is read.
-- **Other tables** — generic decode (`key`, `head_u32`, `strings`) until their
-  columns are reversed. Add a typed decoder to `DECODERS` to promote one.
+- **Other tables** — lossless generic decode until their columns are reversed:
+  each row is `ordinal`, `key`, `raw` (the full row as hex), `u32` (every 4-byte
+  word) and `strings` (every embedded string). Nothing is dropped, so a typed
+  decoder can be written later against the exact bytes — add it to `DECODERS`
+  to promote a table.
 
 ## extract_protocol.py — network-protocol catalog → JSON
 

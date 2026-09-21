@@ -2,7 +2,8 @@
 
 Tools for the **ROM: Golden Age** client and launcher — decrypting launcher
 config, mirroring files from the official patch server, redirecting the client's
-infrastructure hosts, and extracting the game's data tables to JSON.
+infrastructure hosts, extracting the game's data tables to JSON, and rebuilding
+the network-protocol catalog.
 
 ## Tools
 
@@ -74,6 +75,18 @@ and needs UnityPy (use a venv).
 cd client && python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 python3 extract_tables.py            # reads ./extract_tables.toml
+```
+
+**Protocol catalog** — `extract_protocol.py` rebuilds the message catalog the
+server speaks (985 messages: opcodes, ordered field names, and field types) by
+merging the client's `global-metadata.dat` with a frida runtime type dump
+(`resources/rom_dump.json`). Also config-driven
+([`extract_protocol.toml`](client/extract_protocol.toml)), standard library only.
+A client update rotates every opcode, so re-point it at the new metadata and
+re-run.
+
+```bash
+cd client && python3 extract_protocol.py    # reads ./extract_protocol.toml
 ```
 
 ## Layout
