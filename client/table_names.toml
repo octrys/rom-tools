@@ -1,0 +1,154 @@
+# Obfuscated -> friendly field-name map for type_tables.py.
+#
+# Three scopes, most specific first:
+#   [tables.<TableName>]       — fields on a table's top-level row type.
+#   [types.<ShortStructName>]  — shared nested value types; a struct reused
+#                                across tables is named once.
+#   [global]                   — an identifier the obfuscator uses consistently
+#                                across the whole codebase (name it once, applies
+#                                everywhere). Fallback after the two above.
+# Unmapped fields keep their obfuscated name (nothing is lost). Fill this in
+# incrementally; _coverage.json tracks how much of each table is named.
+#
+# Only high-confidence names are set here (meaning clear from types/values/enums);
+# ambiguous fields are deliberately left obfuscated rather than guessed wrong.
+
+# ---- global ---------------------------------------------------------------
+# The row id: `DNIEOGFIAHC` is the id field in 95 of 122 tables (obfuscation is
+# consistent). Tables that use a different id name are handled per-table below.
+[global]
+DNIEOGFIAHC = "id"
+
+# ---- shared nested structs ------------------------------------------------
+
+# {codename, scene, dataScene} scene-bundle reference.
+[types.KLNCDPFCEIA]
+COBIGMMMLJP = "codename"
+KGCCDLKLPKA = "scene"
+AIFKHKAINEE = "dataScene"
+
+# {codename, scene} batch scene-bundle reference.
+[types.BMEMBIBFOII]
+COBIGMMMLJP = "codename"
+KGCCDLKLPKA = "scene"
+
+# {width, height} size pair.
+[types.NGADEEAOLGP]
+BPFBMIDLJKI = "width"
+JJGJIEJMNMM = "height"
+
+# {startTime, endTime} schedule window — two struct variants (time / datetime).
+[types.ECDDFOAFJCO]
+ENICKNLMKMF = "startTime"
+ICBAEHCIBOA = "endTime"
+
+[types.CNNPJJPMACO]
+ENICKNLMKMF = "startTime"
+ICBAEHCIBOA = "endTime"
+
+# ---- tables ---------------------------------------------------------------
+# Curated fields for the map/instance tables (id comes from [global]).
+
+[tables.Map_Data]
+FGNGEPEHCGC = "mapType"
+LFEOJGHOCLC = "name"
+PHMJCGIHDHN = "nameRaw"
+MFGNLFAOAGB = "size"
+PHLMAFEGEKD = "sceneBundle"
+PDOKLFOPDIN = "batchSceneBundle"
+LONEOBBMLGO = "minimap"
+LMANMMHKJDF = "floorLabel"
+MELPOHHAJFM = "icon"
+
+[tables.Warp_Data]
+KANHMAPDHLP = "warpType"
+DCFHLDBOFHD = "name"
+FEEGNICKCAP = "icon"
+
+[tables.Dungeon]
+ENMKOIMDLEL = "mapType"
+KOAIEAAKJEP = "schedule"
+ONKJOFGOELD = "timeLimit"
+
+[tables.Tower]
+COBIGMMMLJP = "name"
+PECFGGEMOMK = "schedule"
+OAJODDJMLFD = "icon"
+
+# ---- tables whose id field is NOT the global `DNIEOGFIAHC` -----------------
+# (detected as the top-level scalar equal to the row key.)
+
+[tables.AchieveCategory]
+MHDNDMFDPGD = "id"
+
+[tables.AuctionLevel]
+DMPCCDGGGOG = "id"
+
+[tables.CChange_Item]
+HJAMOMKKHFP = "id"
+
+[tables.CChange_Jewel]
+HNHMHGOJOFO = "id"
+
+[tables.Costume_Compose]
+LPIAPNCHNIP = "id"
+
+[tables.EnchantItem_Type]
+EDPFMKAIECB = "id"
+
+[tables.Eryndor_Promotion]
+IGCMAOAOKPK = "id"
+
+[tables.Event]
+CLNEFEEPMMH = "id"
+
+[tables.GuildGift_Data]
+CHKAOCAFHFJ = "id"
+
+[tables.Item_Awakening]
+CBODILNOCOD = "id"
+
+[tables.Item_Match]
+IINBGPGEECM = "id"
+
+[tables.Item_Weapon_Group_Data]
+IINBGPGEECM = "id"
+
+[tables.Make_Category]
+DOAHGHCIODO = "id"
+
+[tables.MapData_StrongholdWar]
+OPONJFMEBMC = "id"
+
+[tables.Monolith_Data]
+BKJFHEKKOFL = "id"
+
+[tables.Monster_Compose]
+CLIOJLCAJKE = "id"
+
+[tables.Pet_Adventure]
+OBEHDNPJHOK = "id"
+
+[tables.Pet_Compose]
+LPIAPNCHNIP = "id"
+
+[tables.QuestGuild_Box]
+KCLFDHAAMEM = "id"
+
+[tables.Realm_Edit]
+FMJNGPHOCKG = "id"
+
+[tables.Rune_Compose]
+FKGIKFCOPCC = "id"
+
+[tables.Rune_Line_Cnt]
+BBGEDDCCJBM = "id"
+
+[tables.Rune_Line_Color]
+BBGEDDCCJBM = "id"
+
+[tables.SiegeWarfare_Mecenary]
+CHLMMMIHNIN = "id"
+
+[tables.WorldMap]
+OPONJFMEBMC = "id"

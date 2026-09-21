@@ -1,2 +1,0 @@
-# Only extract_tables.py needs this; the other client tools are stdlib-only.
-UnityPy>=1.20

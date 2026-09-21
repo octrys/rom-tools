@@ -43,9 +43,9 @@ python3 patch_downloader.py --component launcher
 
 Standard library only. Details in [`patcher/README.md`](patcher/README.md).
 
-### [`client/`](client/) — host redirect + data extraction
+### [`client/`](client/) — host redirect, table typing, protocol catalog
 
-Two jobs, detailed in [`client/README.md`](client/README.md):
+Detailed in [`client/README.md`](client/README.md):
 
 **Host redirect** — adjust the client's `global-metadata.dat` and
 `resources.assets` so the game resolves its infrastructure hosts to your own
@@ -65,16 +65,15 @@ python3 client/metadata_host.py global-metadata.dat --new-host 192.168.1.50 --ou
 python3 client/resources_host.py resources.assets --patch-host patch.example.internal --auth-host auth.example.internal --out resources.assets.patched
 ```
 
-**Data extraction** — `extract_tables.py` reads the game's data tables (maps,
-warps, world map, …) from the original CDN bundles in a local patch mirror
-(`resources/patch`, see the patcher) and exports them as JSON for the server. It
-is config-driven ([`extract_tables.toml`](client/extract_tables.toml)), not CLI,
-and needs UnityPy (use a venv).
+**Data extraction** — `type_tables.py` turns the runtime table dump (from
+rom-frida's `dump_tables.js`) into typed, named JSON for the server: it resolves
+every enum to its member name and renames obfuscated fields via a curated map.
+Config-driven ([`type_tables.toml`](client/type_tables.toml)), standard library
+only. Run the frida dump first and drop `rom_dump.cs` + `tables_runtime.json`
+under `resources/`.
 
 ```bash
-cd client && python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-python3 extract_tables.py            # reads ./extract_tables.toml
+cd client && python3 type_tables.py    # reads ./type_tables.toml
 ```
 
 **Protocol catalog** — `extract_protocol.py` rebuilds the message catalog the
@@ -92,12 +91,14 @@ cd client && python3 extract_protocol.py    # reads ./extract_protocol.toml
 ## Layout
 
 ```
-client/              client host redirect + game-data table extraction
-client/tables/       extracted data tables (JSON), one file per table
-launcher/            launcher config decrypt/encrypt
-patcher/             patch-server mirror downloader
-resources/patch/     mirrored patch tree (real/patch/Windows/*.unity) — extractor input
-resources/client/    full client install (GameAssembly.dll, ROMGoldenAge_Data, cache/)
-resources/launcher/  launcher configs (encrypted + decrypted)
-tmp/                 scratch for bulk patch downloads (git-ignored)
+client/                  client host redirect, table typing, protocol catalog
+launcher/                launcher config decrypt/encrypt
+patcher/                 patch-server mirror downloader
+resources/               local, git-ignored inputs/outputs (leaked client data)
+resources/rom_dump.cs    il2cpp dump (rom-frida) — type model for type_tables.py
+resources/tables_runtime.json  runtime table dump (rom-frida) — type_tables.py input
+resources/tables_typed/  typed, named tables (JSON) + _coverage.json — output
+resources/client/        full client install (GameAssembly.dll, ROMGoldenAge_Data)
+resources/launcher/      launcher configs (encrypted + decrypted)
+tmp/                     scratch for bulk patch downloads (git-ignored)
 ```

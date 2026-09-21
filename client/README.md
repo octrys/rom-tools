@@ -1,8 +1,8 @@
 # client
 
 Tools for the ROM: Golden Age **client** — redirecting its infrastructure hosts
-(`metadata_host.py`, `resources_host.py`), extracting its game data tables to
-JSON (`extract_tables.py`), and rebuilding the network-protocol catalog
+(`metadata_host.py`, `resources_host.py`), turning the runtime table dump into
+typed JSON (`type_tables.py`), and rebuilding the network-protocol catalog
 (`extract_protocol.py`).
 
 ## Host redirect
@@ -80,37 +80,40 @@ python3 resources_host.py resources.assets \
 
 Swap in at `client/ROMGoldenAge_Data/resources.assets`.
 
-## extract_tables.py — game data tables → JSON
+## type_tables.py — runtime table dump → typed, named JSON
 
-Exports the game's static data tables (maps, warps, world map, …) to JSON, for
-the server to consume. It reads the **original CDN bundles from a local mirror of
-the patch tree** (`real/patch/Windows/*.unity`, e.g. mirrored by the patcher) —
-it never fetches online. The game-data tables live in `tablecrypto.unity` as
-`C_*` TextAssets — despite the bundle name the content is **plaintext**, in a
-custom little-endian binary format (see the module docstring for the layout). The
-run is stamped with the patch's `AssetBundlesVersion.txt`.
+The shipped bundle can only be decoded losslessly offline (raw bytes): its
+on-wire field order is bespoke, and some values are resolved only at runtime
+(localized names, `.unity`-suffixed scene paths). This tool instead consumes the
+**runtime** dump from rom-frida's `dump_tables.js`
+(`resources/tables_runtime.json`) — every table's rows, fully parsed and
+resolved, keyed by il2cpp-**obfuscated** field names with enum values as raw
+integers — and makes it readable:
 
-Unlike the tools above it is **config-driven, not CLI**: edit
-[`extract_tables.toml`](extract_tables.toml) (patch-mirror path, output dir,
-bundle, table names) and run it. It needs UnityPy (not stdlib), so use a venv:
+1. **Enum resolution** — every enum value becomes its member name (enum members
+   are *not* obfuscated), e.g. `2 → "MT_FIELD"`, using the type model parsed
+   from `rom_dump.cs`.
+2. **Field naming** — obfuscated names are renamed via
+   [`table_names.toml`](table_names.toml), a curated map with two scopes:
+   `[types.<Struct>]` (shared nested value types, named once) and
+   `[tables.<Table>]` (a table's top-level fields). Unmapped fields keep their
+   obfuscated name — nothing is lost — and `_coverage.json` tracks progress so
+   naming can be driven table by table.
+
+Config-driven ([`type_tables.toml`](type_tables.toml)), standard library only
+(Python 3.11+ for `tomllib`). Reads the frida artifacts, so run those first (see
+the `rom-frida` repo) and place `rom_dump.cs` + `tables_runtime.json` under
+`resources/`.
 
 ```bash
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-python3 extract_tables.py            # reads ./extract_tables.toml
+python3 type_tables.py            # reads ./type_tables.toml
 ```
 
-Writes one `<Table>.json` per table into the configured output dir (the map count
-varies by patch version):
-
-- **`Map_Data.json`** — typed: `id`, `mapId`, `subType`, `name`, `category`,
-  `scene_bundle`, `minimap`. `mapId ≈ 2000000 + id*10 + 1` for the main series;
-  special ranges (metropolis, war, citadels) differ, so it is read.
-- **Other tables** — lossless generic decode until their columns are reversed:
-  each row is `ordinal`, `key`, `raw` (the full row as hex), `u32` (every 4-byte
-  word) and `strings` (every embedded string). Nothing is dropped, so a typed
-  decoder can be written later against the exact bytes — add it to `DECODERS`
-  to promote a table.
+Writes one typed `<Table>.json` per table into the configured output dir, plus
+`_coverage.json` (named vs. obfuscated fields per table). Shared internal code
+lives in [`libs/`](libs/): `libs/table_schema.py` (the dump parser, imported by
+the tool) and `libs/inspect_table.py` (a dev helper that dumps a table's fields
++ sample values to drive naming — `python3 -m libs.inspect_table <Table>`).
 
 ## extract_protocol.py — network-protocol catalog → JSON
 
@@ -122,7 +125,7 @@ ordered field names, and field types. It merges two client artifacts:
 | `global-metadata.dat` | message classes, `__ID__` opcodes, ordered field names | clean (unencrypted) on PC, parsed directly — no il2cpp dumper (the binary is Themida-packed) |
 | `rom_dump.json` | each field's **type** | the type table lives inside the packed `GameAssembly.dll`, decrypted only at runtime, so types can't be read statically — this is a frida-il2cpp-bridge dump |
 
-Like `extract_tables.py` it is **config-driven, not CLI**: edit
+Like its sibling tools it is **config-driven, not CLI**: edit
 [`extract_protocol.toml`](extract_protocol.toml) (metadata, dump, output paths)
 and run it. Standard library only, but needs `tomllib` (Python 3.11+).
 
@@ -144,6 +147,5 @@ and re-run to remigrate the catalog.
 ## Requirements
 
 - `metadata_host.py`, `resources_host.py`: Python 3.8+ (standard library only)
-- `extract_tables.py`: Python 3.11+ (`tomllib`) + UnityPy (`requirements.txt`;
-  `.venv/` is git-ignored)
+- `type_tables.py`: Python 3.11+ (`tomllib`), standard library only
 - `extract_protocol.py`: Python 3.11+ (`tomllib`), standard library only

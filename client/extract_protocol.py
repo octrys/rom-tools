@@ -19,8 +19,8 @@ Outputs (into the configured output dir):
   * `messages.json` / `messages.md`        — opcodes + ordered field names
   * `messages_typed.json` / `messages_typed.md` — the above + field types
 
-Like the sibling `extract_tables.py`, this is config-driven (`extract_protocol.toml`),
-not CLI. It is standard library only but needs `tomllib` (Python 3.11+).
+Like its sibling tools, this is config-driven (`extract_protocol.toml`), not CLI.
+It is standard library only but needs `tomllib` (Python 3.11+).
 
 Wire note: IL2CPP stores Int32 field defaults zigzag-encoded, so `__ID__` is
 decoded `id = (u >> 1) ^ -(u & 1)`. A client update rotates every opcode (the body
