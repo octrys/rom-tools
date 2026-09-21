@@ -160,20 +160,24 @@ def decode_map_data(data: bytes, head: bytes) -> list[dict]:
 
 
 def decode_generic(data: bytes, head: bytes) -> list[dict]:
-    """Best-effort decoder for tables without a typed schema.
+    """Lossless decoder for tables without a typed schema.
 
-    Emits the row key plus the leading u32 header words and every embedded
-    string, so the data is captured even before a table's columns are named.
+    Emits the full raw row as hex (so nothing is ever dropped and a typed
+    decoder can be written later against the exact bytes) alongside two
+    convenience views: every u32 word and every embedded string. The word
+    view over-reads string/float regions — it is a hint, not the schema — but
+    `raw` always holds the complete row.
     """
     rows = []
     for ordinal, (key, offset, length) in enumerate(parse_head(head), start=1):
         row = data[offset : offset + length]
-        head_words = list(struct.unpack_from("<" + "I" * min(6, length // 4), row, 0))
+        words = list(struct.unpack_from("<" + "I" * (len(row) // 4), row, 0))
         rows.append(
             {
                 "ordinal": ordinal,
                 "key": key,
-                "head_u32": head_words,
+                "raw": row.hex(),
+                "u32": words,
                 "strings": read_strings(row),
             }
         )

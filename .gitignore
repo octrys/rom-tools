@@ -1,6 +1,13 @@
 # bulk patch downloads
 tmp/
 
+# local client/game data mirror and runtime dumps — never commit (leaked data)
+resources/
+client/global-metadata.dat
+client/global-metadata.dat.original
+client/resources.assets
+client/resources.assets.original
+
 # Python
 __pycache__/
 *.py[cod]

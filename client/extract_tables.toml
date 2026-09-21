@@ -19,6 +19,7 @@ bundle = "tablecrypto.unity"
 # TextAsset plus its `_head` row index. Leave empty ([]) to export every table
 # found in the bundle.
 tables = [
+    # Maps
     "Map_Data",
     "MapInfo",
     "Warp_Data",
@@ -26,4 +27,17 @@ tables = [
     "Map_Entry",
     "Map_Time",
     "Map_Buff",
+    # World / instances
+    "Dungeon",
+    "Dungeon_Reward",
+    "Wave",
+    "Tower",
+    "Tower_Floor_Reward",
+    "Tower_Point_Reward",
+    "Tower_Shop",
+    "Realm_Group",
+    "Realm_Edit",
+    "MapData_StrongholdWar",
+    "ObjectData",
+    "FxData",
 ]
