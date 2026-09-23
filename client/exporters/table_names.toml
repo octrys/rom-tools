@@ -1,4 +1,4 @@
-# Obfuscated -> friendly field-name map for type_tables.py.
+# Obfuscated -> friendly field-name map for extract_tables.py.
 #
 # Three scopes, most specific first:
 #   [tables.<TableName>]       — fields on a table's top-level row type.

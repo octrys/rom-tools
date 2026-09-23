@@ -10,7 +10,7 @@ metadata = "./global-metadata.dat"
 # Runtime type dump from frida-il2cpp-bridge (dump_bridge.js) — supplies each
 # field's type, which the metadata alone cannot give (the type table lives inside
 # the Themida-packed GameAssembly.dll). Set to "" to skip typing (untyped only).
-dump = "../resources/rom_dump.json"
+dump = "../../resources/rom_dump.json"
 
 # Directory the protocol JSON/Markdown is written to (created if missing).
-output = "../resources/protocol"
+output = "../../resources/protocol"

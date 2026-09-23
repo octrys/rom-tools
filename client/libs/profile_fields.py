@@ -33,7 +33,7 @@ from pathlib import Path
 
 from .table_schema import Schema, parse_dump
 
-CONFIG_PATH = Path(__file__).resolve().parents[1] / "type_tables.toml"
+CONFIG_PATH = Path(__file__).resolve().parents[1] / "exporters" / "extract_tables.toml"
 
 MAX_SAMPLES = 8
 MAX_ROWS_PER_TABLE = 400  # enough for value variety without scanning millions

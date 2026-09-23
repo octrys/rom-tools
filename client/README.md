@@ -2,8 +2,12 @@
 
 Tools for the ROM: Golden Age **client** — redirecting its infrastructure hosts
 (`patchers/metadata_host.py`, `patchers/resources_host.py`), turning the runtime table dump into
-typed JSON (`type_tables.py`), and rebuilding the network-protocol catalog
-(`extract_protocol.py`).
+typed JSON (`exporters/extract_tables.py`), and rebuilding the network-protocol catalog
+(`exporters/extract_protocol.py`).
+
+The two data extractors live under [`exporters/`](exporters/) and are run from
+this directory as modules (`python3 -m exporters.<tool>`) so they can import the
+shared [`libs/`](libs/) package.
 
 ## Host redirect
 
@@ -80,7 +84,7 @@ python3 patchers/resources_host.py resources.assets \
 
 Swap in at `client/ROMGoldenAge_Data/resources.assets`.
 
-## type_tables.py — runtime table dump → typed, named JSON
+## exporters/extract_tables.py — runtime table dump → typed, named JSON
 
 The shipped bundle can only be decoded losslessly offline (raw bytes): its
 on-wire field order is bespoke, and some values are resolved only at runtime
@@ -94,7 +98,7 @@ integers — and makes it readable:
    are *not* obfuscated), e.g. `2 → "MT_FIELD"`, using the type model parsed
    from `rom_dump.cs`.
 2. **Field naming** — obfuscated names are renamed via
-   [`table_names.toml`](table_names.toml), a curated map with four scopes,
+   [`table_names.toml`](exporters/table_names.toml), a curated map with four scopes,
    most specific first: `[tables.<Table>]` (a table's top-level fields),
    `[types.<Struct>]` (shared nested value types, named once), `[enums]`
    (keyed by the obfuscated enum *type* — since enum members aren't obfuscated,
@@ -103,13 +107,13 @@ integers — and makes it readable:
    keep their obfuscated name — nothing is lost — and `_coverage.json` tracks
    progress so naming can be driven top-down (see `libs/profile_fields.py`).
 
-Config-driven ([`type_tables.toml`](type_tables.toml)), standard library only
-(Python 3.11+ for `tomllib`). Reads the frida artifacts, so run those first (see
-the `rom-frida` repo) and place `rom_dump.cs` + `tables_runtime.json` under
-`resources/`.
+Config-driven ([`extract_tables.toml`](exporters/extract_tables.toml)), standard
+library only (Python 3.11+ for `tomllib`). Reads the frida artifacts, so run those
+first (see the `rom-frida` repo) and place `rom_dump.cs` + `tables_runtime.json`
+under `resources/`.
 
 ```bash
-python3 type_tables.py            # reads ./type_tables.toml
+python3 -m exporters.extract_tables    # reads exporters/extract_tables.toml
 ```
 
 Writes one typed `<Table>.json` per table into the configured output dir, plus
@@ -136,7 +140,7 @@ lives in [`libs/`](libs/):
 
   Also writes the full profile to `<output>/_fields.json` for programmatic use.
 
-## extract_protocol.py — network-protocol catalog → JSON
+## exporters/extract_protocol.py — network-protocol catalog → JSON
 
 Rebuilds the message catalog the server speaks: **985 messages** with opcodes,
 ordered field names, and field types. It merges two client artifacts:
@@ -147,11 +151,11 @@ ordered field names, and field types. It merges two client artifacts:
 | `rom_dump.json` | each field's **type** | the type table lives inside the packed `GameAssembly.dll`, decrypted only at runtime, so types can't be read statically — this is a frida-il2cpp-bridge dump |
 
 Like its sibling tools it is **config-driven, not CLI**: edit
-[`extract_protocol.toml`](extract_protocol.toml) (metadata, dump, output paths)
-and run it. Standard library only, but needs `tomllib` (Python 3.11+).
+[`extract_protocol.toml`](exporters/extract_protocol.toml) (metadata, dump, output
+paths) and run it. Standard library only, but needs `tomllib` (Python 3.11+).
 
 ```bash
-python3 extract_protocol.py            # reads ./extract_protocol.toml
+python3 -m exporters.extract_protocol    # reads exporters/extract_protocol.toml
 ```
 
 Writes into the configured output dir:
@@ -168,5 +172,5 @@ and re-run to remigrate the catalog.
 ## Requirements
 
 - `patchers/metadata_host.py`, `patchers/resources_host.py`: Python 3.8+ (standard library only)
-- `type_tables.py`: Python 3.11+ (`tomllib`), standard library only
-- `extract_protocol.py`: Python 3.11+ (`tomllib`), standard library only
+- `exporters/extract_tables.py`: Python 3.11+ (`tomllib`), standard library only
+- `exporters/extract_protocol.py`: Python 3.11+ (`tomllib`), standard library only

@@ -65,27 +65,28 @@ python3 client/patchers/metadata_host.py global-metadata.dat --new-host 192.168.
 python3 client/patchers/resources_host.py resources.assets --patch-host patch.example.internal --auth-host auth.example.internal --out resources.assets.patched
 ```
 
-**Data extraction** — `type_tables.py` turns the runtime table dump (from
-rom-frida's `dump_tables.js`) into typed, named JSON for the server: it resolves
-every enum to its member name and renames obfuscated fields via a curated map.
-Config-driven ([`type_tables.toml`](client/type_tables.toml)), standard library
-only. Run the frida dump first and drop `rom_dump.cs` + `tables_runtime.json`
-under `resources/`.
+**Data extraction** — `exporters/extract_tables.py` turns the runtime table dump
+(from rom-frida's `dump_tables.js`) into typed, named JSON for the server: it
+resolves every enum to its member name and renames obfuscated fields via a
+curated map. Config-driven
+([`exporters/extract_tables.toml`](client/exporters/extract_tables.toml)),
+standard library only. Run the frida dump first and drop `rom_dump.cs` +
+`tables_runtime.json` under `resources/`.
 
 ```bash
-cd client && python3 type_tables.py    # reads ./type_tables.toml
+cd client && python3 -m exporters.extract_tables    # reads exporters/extract_tables.toml
 ```
 
-**Protocol catalog** — `extract_protocol.py` rebuilds the message catalog the
-server speaks (985 messages: opcodes, ordered field names, and field types) by
-merging the client's `global-metadata.dat` with a frida runtime type dump
-(`resources/rom_dump.json`). Also config-driven
-([`extract_protocol.toml`](client/extract_protocol.toml)), standard library only.
-A client update rotates every opcode, so re-point it at the new metadata and
-re-run.
+**Protocol catalog** — `exporters/extract_protocol.py` rebuilds the message
+catalog the server speaks (985 messages: opcodes, ordered field names, and field
+types) by merging the client's `global-metadata.dat` with a frida runtime type
+dump (`resources/rom_dump.json`). Also config-driven
+([`exporters/extract_protocol.toml`](client/exporters/extract_protocol.toml)),
+standard library only. A client update rotates every opcode, so re-point it at
+the new metadata and re-run.
 
 ```bash
-cd client && python3 extract_protocol.py    # reads ./extract_protocol.toml
+cd client && python3 -m exporters.extract_protocol    # reads exporters/extract_protocol.toml
 ```
 
 ## Layout
@@ -95,8 +96,8 @@ client/                  client host redirect, table typing, protocol catalog
 launcher/                launcher config decrypt/encrypt
 patcher/                 patch-server mirror downloader
 resources/               local, git-ignored inputs/outputs (leaked client data)
-resources/rom_dump.cs    il2cpp dump (rom-frida) — type model for type_tables.py
-resources/tables_runtime.json  runtime table dump (rom-frida) — type_tables.py input
+resources/rom_dump.cs    il2cpp dump (rom-frida) — type model for exporters/extract_tables.py
+resources/tables_runtime.json  runtime table dump (rom-frida) — exporters/extract_tables.py input
 resources/tables_typed/  typed, named tables (JSON) + _coverage.json — output
 resources/client/        full client install (GameAssembly.dll, ROMGoldenAge_Data)
 resources/launcher/      launcher configs (encrypted + decrypted)

@@ -14,10 +14,10 @@ field names with enum values as raw integers — and makes it readable:
    (curated, per table + shared nested structs). Unmapped fields keep their
    obfuscated name so nothing is ever lost; a coverage report shows progress.
 
-Config-driven like its siblings — edit `type_tables.toml` and run it. No CLI.
+Config-driven like its siblings — edit `extract_tables.toml` and run it. No CLI.
 
-Usage:
-    python3 type_tables.py            # reads ./type_tables.toml
+Usage (run from the client dir as a module so `libs` resolves):
+    python3 -m exporters.extract_tables    # reads exporters/extract_tables.toml
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ from pathlib import Path
 
 from libs import Schema, parse_dump
 
-CONFIG_PATH = Path(__file__).with_name("type_tables.toml")
+CONFIG_PATH = Path(__file__).with_name("extract_tables.toml")
 
 PRIMITIVES = {
     "System.Int32",
