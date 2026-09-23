@@ -2,11 +2,12 @@
 
 Tools for the ROM: Golden Age **client** — redirecting its infrastructure hosts
 (`patchers/metadata_host.py`, `patchers/resources_host.py`), turning the runtime table dump into
-typed JSON (`exporters/extract_tables.py`), and rebuilding the network-protocol catalog
-(`exporters/extract_protocol.py`).
+typed JSON (`exporters/extract_tables.py`), rebuilding the network-protocol catalog
+(`exporters/extract_protocol.py`), and projecting the typed tables into the
+server-facing gamedata set (`exporters/export_gamedata.py`).
 
-The two data extractors live under [`exporters/`](exporters/) and are run from
-this directory as modules (`python3 -m exporters.<tool>`) so they can import the
+The data exporters live under [`exporters/`](exporters/) and are run from this
+directory as modules (`python3 -m exporters.<tool>`) so they can import the
 shared [`libs/`](libs/) package.
 
 ## Host redirect
