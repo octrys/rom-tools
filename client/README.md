@@ -1,7 +1,7 @@
 # client
 
 Tools for the ROM: Golden Age **client** — redirecting its infrastructure hosts
-(`metadata_host.py`, `resources_host.py`), turning the runtime table dump into
+(`patchers/metadata_host.py`, `patchers/resources_host.py`), turning the runtime table dump into
 typed JSON (`type_tables.py`), and rebuilding the network-protocol catalog
 (`extract_protocol.py`).
 
@@ -14,8 +14,8 @@ server means editing both:
 
 | Base | Lives in | String | Builds | Tool |
 |---|---|---|---|---|
-| **A** | IL2CPP string literal in `global-metadata.dat` | `https://patch.romgoldenage.com/NewPCwemix/` (42 B) | `/NewPCwemix/Real/patch/manifest.json` | `metadata_host.py` |
-| **B** | `ProjectSettingData_Crypto_Win_Live` string in `resources.assets` | `https://patch.romgoldenage.com/real/` (36 B) | `/real/domaindata.json`, `/real/maintenances.json`, `/real/ROMGoldenAge_WemixPay_Crypto.json`, `/real/patch/Windows/*` | `resources_host.py` |
+| **A** | IL2CPP string literal in `global-metadata.dat` | `https://patch.romgoldenage.com/NewPCwemix/` (42 B) | `/NewPCwemix/Real/patch/manifest.json` | `patchers/metadata_host.py` |
+| **B** | `ProjectSettingData_Crypto_Win_Live` string in `resources.assets` | `https://patch.romgoldenage.com/real/` (36 B) | `/real/domaindata.json`, `/real/maintenances.json`, `/real/ROMGoldenAge_WemixPay_Crypto.json`, `/real/patch/Windows/*` | `patchers/resources_host.py` |
 
 Both tools edit the host **in place** (no offset rebuild) and always emit a
 patched **copy** — they never overwrite the source. Swap the copies in on the
@@ -24,7 +24,7 @@ client, keep the originals as backups, and expect GameGuard to hash both files.
 For the full set of infrastructure domains compiled into the client (patch, auth,
 billing, WEMIX, NHN, etc.), see [`DOMAINS.md`](DOMAINS.md).
 
-## metadata_host.py — base A
+## patchers/metadata_host.py — base A
 
 Redirects the host inside the IL2CPP string literal in `global-metadata.dat`. The
 literal is `{ u32 length; i32 dataIndex }` + a raw data blob, so an in-place edit
@@ -35,18 +35,18 @@ The path suffix (`/NewPCwemix/`) is preserved; `--include-pc` also patches the
 
 ```bash
 # analyse only (find the literal, change nothing)
-python3 metadata_host.py global-metadata.dat
+python3 patchers/metadata_host.py global-metadata.dat
 
 # write a patched copy pointing at your host
-python3 metadata_host.py global-metadata.dat --new-host 192.168.1.50 --out global-metadata.patched.dat
+python3 patchers/metadata_host.py global-metadata.dat --new-host 192.168.1.50 --out global-metadata.patched.dat
 
 # force plain http (only if it propagates end to end)
-python3 metadata_host.py global-metadata.dat --new-host 192.168.1.50 --scheme http --out global-metadata.patched.dat
+python3 patchers/metadata_host.py global-metadata.dat --new-host 192.168.1.50 --scheme http --out global-metadata.patched.dat
 ```
 
 Swap in at `client/ROMGoldenAge_Data/il2cpp_data/Metadata/global-metadata.dat`.
 
-## resources_host.py — resources.assets host rewrite
+## patchers/resources_host.py — resources.assets host rewrite
 
 Rewrites hardcoded host strings inside `resources.assets`. Two targets, each with
 its own flag, applied in a single pass:
@@ -67,13 +67,13 @@ redirect webserver is expected to strip everything before `/real/`.
 
 ```bash
 # analyse only — list both targets, their offsets, and confirm each is unique
-python3 resources_host.py resources.assets
+python3 patchers/resources_host.py resources.assets
 
 # rewrite the patch host only
-python3 resources_host.py resources.assets --patch-host patch.example.internal --out resources.assets.patched
+python3 patchers/resources_host.py resources.assets --patch-host patch.example.internal --out resources.assets.patched
 
 # rewrite both hosts in one pass
-python3 resources_host.py resources.assets \
+python3 patchers/resources_host.py resources.assets \
     --patch-host patch.example.internal --auth-host auth.example.internal \
     --out resources.assets.patched
 ```
@@ -167,6 +167,6 @@ and re-run to remigrate the catalog.
 
 ## Requirements
 
-- `metadata_host.py`, `resources_host.py`: Python 3.8+ (standard library only)
+- `patchers/metadata_host.py`, `patchers/resources_host.py`: Python 3.8+ (standard library only)
 - `type_tables.py`: Python 3.11+ (`tomllib`), standard library only
 - `extract_protocol.py`: Python 3.11+ (`tomllib`), standard library only

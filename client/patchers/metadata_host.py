@@ -27,10 +27,10 @@ This tool NEVER writes over the source; it emits a patched COPY. Swap the copy i
 at client/ROMGoldenAge_Data/il2cpp_data/Metadata/global-metadata.dat (keep a
 backup; GameGuard hashes it).
 
-Usage:
-    python3 metadata_host.py global-metadata.dat                      # analyse only
-    python3 metadata_host.py global-metadata.dat --new-host 192.168.1.50 --out gm.patched.dat
-    python3 metadata_host.py global-metadata.dat --new-host 192.168.1.50 --scheme http --out ...
+Usage (from client/):
+    python3 patchers/metadata_host.py global-metadata.dat                      # analyse only
+    python3 patchers/metadata_host.py global-metadata.dat --new-host 192.168.1.50 --out gm.patched.dat
+    python3 patchers/metadata_host.py global-metadata.dat --new-host 192.168.1.50 --scheme http --out ...
 """
 import argparse
 import struct

@@ -22,7 +22,7 @@ and auth needs a 21-char host over https:
     "https://auth.example.internal/"         (30 bytes)
 
 Base A (the patch manifest host) is a metadata literal, redirected separately via
-metadata_host.py.
+patchers/metadata_host.py.
 
 NEVER writes over the source; emits a patched COPY. Swap it in at
 client/ROMGoldenAge_Data/resources.assets (keep a backup; GameGuard hashes it).
@@ -30,10 +30,10 @@ client/ROMGoldenAge_Data/resources.assets (keep a backup; GameGuard hashes it).
 Both hosts are rewritten in a single pass: pass --patch-host, --auth-host, or
 both, and the tool applies every requested edit to one patched copy.
 
-Usage:
-    python3 resources_host.py resources.assets                          # analyse all targets
-    python3 resources_host.py resources.assets --patch-host patch.example.internal --out resources.assets.patched
-    python3 resources_host.py resources.assets --patch-host patch.example.internal --auth-host auth.example.internal --out resources.assets.patched
+Usage (from client/):
+    python3 patchers/resources_host.py resources.assets                          # analyse all targets
+    python3 patchers/resources_host.py resources.assets --patch-host patch.example.internal --out resources.assets.patched
+    python3 patchers/resources_host.py resources.assets --patch-host patch.example.internal --auth-host auth.example.internal --out resources.assets.patched
 """
 import argparse
 import struct

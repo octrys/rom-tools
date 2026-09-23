@@ -52,17 +52,17 @@ Detailed in [`client/README.md`](client/README.md):
 server instead of `patch.romgoldenage.com` / `auth.romgoldenage.com`. The
 patch/CDN host lives in two places — an IL2CPP string literal (base A) and a Unity
 `ProjectSettingData_Crypto_Win_Live` string (base B); `resources.assets` also
-holds the auth host string. `resources_host.py` rewrites the patch and auth
+holds the auth host string. `patchers/resources_host.py` rewrites the patch and auth
 strings in a single pass (`--patch-host` / `--auth-host`). Everything is edited in
 place, emitting a patched copy without ever overwriting the source. Standard
 library only.
 
 ```bash
 # base A — metadata literal
-python3 client/metadata_host.py global-metadata.dat --new-host 192.168.1.50 --out global-metadata.patched.dat
+python3 client/patchers/metadata_host.py global-metadata.dat --new-host 192.168.1.50 --out global-metadata.patched.dat
 
 # base B — resources.assets (patch + auth hosts, each exact byte length; no padding)
-python3 client/resources_host.py resources.assets --patch-host patch.example.internal --auth-host auth.example.internal --out resources.assets.patched
+python3 client/patchers/resources_host.py resources.assets --patch-host patch.example.internal --auth-host auth.example.internal --out resources.assets.patched
 ```
 
 **Data extraction** — `type_tables.py` turns the runtime table dump (from
