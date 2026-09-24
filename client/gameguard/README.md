@@ -77,6 +77,4 @@ Launch as usual: `ROMGoldenAge.exe -env=Real`.
 How it was found: with the stub installed (GameGuard absent, so IL2CPP hooks are
 safe), a frida agent hooked the managed `GameGuardUnityManager` methods and caught
 `Awake` calling `GetInitErrorMsg(<Init return>)`; returning 1877 flipped it to the
-success path, and a second run pinned the later popup on `CheckNPGameMon`. The
-frida agents live in the `rom-frida` repo (`scripts/watch_gg_manager.js`,
-`scripts/diag_bootstrap.js`).
+success path, and a second run pinned the later popup on `CheckNPGameMon`.
