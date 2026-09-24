@@ -1,8 +1,9 @@
 # client
 
 Tools for the ROM: Golden Age **client** — redirecting its infrastructure hosts
-(`patchers/metadata_host.py`, `patchers/resources_host.py`), turning the runtime table dump into
-typed JSON (`exporters/extract_tables.py`), rebuilding the network-protocol catalog
+(`patchers/metadata_host.py`, `patchers/resources_host.py`), reading and rewriting
+GameGuard's own encrypted config (`patchers/gameguard_config.py`), turning the
+runtime table dump into typed JSON (`exporters/extract_tables.py`), rebuilding the network-protocol catalog
 (`exporters/extract_protocol.py`), and projecting the typed tables into the
 server-facing gamedata set (`exporters/export_gamedata.py`).
 
@@ -21,10 +22,16 @@ server means editing both:
 |---|---|---|---|---|
 | **A** | IL2CPP string literal in `global-metadata.dat` | `https://patch.romgoldenage.com/NewPCwemix/` (42 B) | `/NewPCwemix/Real/patch/manifest.json` | `patchers/metadata_host.py` |
 | **B** | `ProjectSettingData_Crypto_Win_Live` string in `resources.assets` | `https://patch.romgoldenage.com/real/` (36 B) | `/real/domaindata.json`, `/real/maintenances.json`, `/real/ROMGoldenAge_WemixPay_Crypto.json`, `/real/patch/Windows/*` | `patchers/resources_host.py` |
+| **GG** | `UPDATE_SERVER` in the encrypted `ROMGoldenAge.ini` | `patch.romgoldenage.com` + `/gameguard/real/` | `/gameguard/real/update.cfg` (GameMon's own update descriptor) | `patchers/gameguard_config.py` |
 
-Both tools edit the host **in place** (no offset rebuild) and always emit a
+Both host tools edit the string **in place** (no offset rebuild) and always emit a
 patched **copy** — they never overwrite the source. Swap the copies in on the
 client, keep the originals as backups, and expect GameGuard to hash both files.
+
+**GameGuard does not use either literal.** GameMon reads its update host from its
+own encrypted config, so patching bases A and B leaves GG talking to production —
+a live external dependency. `patchers/gameguard_config.py` is the third,
+independent lever (and the only one whose file is signed).
 
 For the full set of infrastructure domains compiled into the client (patch, auth,
 billing, WEMIX, NHN, etc.), see [`DOMAINS.md`](DOMAINS.md).
@@ -84,6 +91,66 @@ python3 patchers/resources_host.py resources.assets \
 ```
 
 Swap in at `client/ROMGoldenAge_Data/resources.assets`.
+
+## patchers/gameguard_config.py — GameGuard's encrypted config
+
+Decrypts and re-encrypts the nProtect container GameGuard ships its per-game
+config in: `client/ROMGoldenAge.ini` (mirrored, with different contents, in
+`client/GameGuard/`) and the `gameguard/real/update.cfg` served by the patch CDN.
+The plaintext is a plain INI:
+
+```ini
+[GAMEMON]
+GAME_NAME=ROMGoldenAge
+UPDATE_SERVER=patch.romgoldenage.com      ; GG's update host
+UPDATE_PATH=/gameguard/real/              ; ...+ path => /gameguard/real/update.cfg
+79085e5a=mgr.gameguard.co.kr              ; nProtect's own live-check hosts (x5)
+NO_USE_SCAN=1
+SPEEDCHECK_INTERVAL=1000
+HTTP_PORT=443
+```
+
+**Container** — little-endian, plaintext trailer of `[u8 tag][26 81 32][payload]`
+records with the tag *before* the magic, counting down `0x24` → `0x21`
+(`tailExtra`+`256`; `filename`+64-byte digest; the lengths of the previous record;
+EOF). The blob decrypts to `[INI text][tailExtra + 256]`, so
+`textLen = len(blob) - tailExtra - 256` — which lands exactly on the end of the
+text in every known sample.
+
+**Cipher** — an unidentified stream cipher with a **fixed key and no per-file IV**:
+every file nProtect ships uses the same keystream, making them a many-time pad.
+The 600 bytes embedded in the tool were recovered by cross-cribbing three samples
+against each other, and verified independently — the CRC32 values in the decrypted
+`update.cfg` match `zlib.crc32()` of the shipped `GameMon.des` / `npggNT.des` /
+`npggNT64.des` exactly. Both `.ini` files fit inside those 600 bytes; `update.cfg`
+(2049 B of text) only decrypts up to that point and cannot be re-encrypted.
+
+```bash
+# analyse only — records, text length, keystream coverage
+python3 patchers/gameguard_config.py ROMGoldenAge.ini
+
+# plaintext to stdout, or to a file
+python3 patchers/gameguard_config.py ROMGoldenAge.ini --decrypt
+python3 patchers/gameguard_config.py ROMGoldenAge.ini --decrypt --out rom.ini.txt
+
+# edit rom.ini.txt, then re-encrypt into a patched copy
+python3 patchers/gameguard_config.py ROMGoldenAge.ini --encrypt rom.ini.txt --out ROMGoldenAge.patched.ini
+```
+
+`--encrypt` holds the plaintext length **exactly**, so the tail ciphertext and the
+whole trailer pass through byte for byte and no offset moves — re-encrypting an
+unmodified decrypt reproduces the source bit for bit. A shorter edit is padded
+with blank lines; a longer one is refused with the delta.
+
+⚠️ The 256-byte tail and 64-byte digest are signatures that cannot be recomputed,
+so a patched file carries the originals. **GameGuard does verify them** — runtime
+tracing (`rom-frida`'s `trace_gg_config.js`) caught `NPGameDLL64.dll` reading all
+1007 bytes of `client/GameGuard/ROMGoldenAge.ini`, MD5-hashing exactly
+`textLen + tailExtra` (638) bytes and calling `BCryptVerifySignature`. So a
+modified config is rejected without an RSA forgery. It opens the `GameGuard/`
+copy first and **falls back to the client-root copy** when that is missing —
+both are verified the same way, so patch both. The two are **not** identical
+(they differ in one flag value), because GameGuard restores its own copy.
 
 ## exporters/extract_tables.py — runtime table dump → typed, named JSON
 
@@ -172,6 +239,6 @@ and re-run to remigrate the catalog.
 
 ## Requirements
 
-- `patchers/metadata_host.py`, `patchers/resources_host.py`: Python 3.8+ (standard library only)
+- `patchers/metadata_host.py`, `patchers/resources_host.py`, `patchers/gameguard_config.py`: Python 3.10+ (standard library only)
 - `exporters/extract_tables.py`: Python 3.11+ (`tomllib`), standard library only
 - `exporters/extract_protocol.py`: Python 3.11+ (`tomllib`), standard library only
