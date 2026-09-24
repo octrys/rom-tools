@@ -110,6 +110,10 @@ SPEEDCHECK_INTERVAL=1000
 HTTP_PORT=443
 ```
 
+A full decrypted sample (CRLF, 588 bytes, `UPDATE_SERVER` already pointed at
+`rmpatch.rom.octrys.dev`) is in
+[`patchers/samples/ROMGoldenAge.decrypted.ini`](patchers/samples/ROMGoldenAge.decrypted.ini).
+
 **Container** — little-endian, plaintext trailer of `[u8 tag][26 81 32][payload]`
 records with the tag *before* the magic, counting down `0x24` → `0x21`
 (`tailExtra`+`256`; `filename`+64-byte digest; the lengths of the previous record;
