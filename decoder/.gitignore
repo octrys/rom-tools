@@ -1,0 +1,11 @@
+# cached per-capture analysis (derived from captures)
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# captures carry real session data (account codes, device IDs, key material)
+pcap/*
+!pcap/.gitkeep

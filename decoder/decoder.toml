@@ -1,0 +1,41 @@
+# Configuration for the pcap decoder. Relative paths resolve against this file's
+# directory.
+
+[paths]
+# The typed protocol catalog emitted by client/exporters/extract_protocol.py.
+# A client update rotates every opcode, so regenerate it and this picks up the
+# new file with no change here.
+catalog = "../resources/protocol/messages_typed.json"
+
+# The frida runtime type dump (rom_dump.json): struct field layouts, inheritance
+# (`parent`) and enums, used to decode nested structs, lists of structs, fixed
+# arrays and the inherited base fields (e.g. the __state__ header on *List
+# messages). Set to "" to decode only self-describing types.
+type_dump = "../resources/rom_dump.json"
+
+# Directory scanned for capture files (.pcap / .pcapng / .cap).
+pcap_dir = "./pcap"
+
+# Directory holding cached per-capture analysis (one JSON + signature per pcap). The
+# web UI analyzes a capture on first open and reuses the cache after.
+cache_dir = "./.cache"
+
+# The wire framing, reversed from the sample captures (see decoder/README.md):
+# a 2-byte little-endian length prefix that counts the whole frame (prefix
+# included), followed by an opaque body. The body is ENCRYPTED — there is no
+# plaintext opcode on the wire (opcode_size = 0), so frames split cleanly but the
+# catalog cannot be applied until the body is decrypted upstream.
+[framing]
+length_size = 2              # bytes in the length prefix (2 or 4)
+length_endian = "little"     # "little" or "big"
+length_includes_header = true
+opcode_size = 0              # 0 = no plaintext opcode (encrypted body)
+opcode_endian = "little"     # "little" or "big"
+
+# Rabbit-cipher body encryption. The per-session body key is derived from the
+# handshake (sent plaintext in the first S2C frame), so captures decrypt
+# passively. `static_key` is the AES-128-ECB key the client applies to the
+# handshake key halves; it rotates on client updates (this is the post-2026-09
+# value) — update it here when the client changes.
+[crypto]
+static_key = "Sxf89J&1*,0Axm>t"
