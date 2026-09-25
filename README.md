@@ -89,10 +89,36 @@ the new metadata and re-run.
 cd client && python3 -m exporters.extract_protocol    # reads exporters/extract_protocol.toml
 ```
 
+### [`decoder/`](decoder/) — pcap analyzer/decoder
+
+Reassembles TCP streams from captured game traffic, splits them into protocol
+frames, decrypts them (Rabbit stream cipher, session key derived from the
+plaintext handshake — captures decrypt passively, no client instrumentation)
+and decodes each frame against the protocol catalog above. A FastAPI + Preact
+web inspector browses the result: a chronological **Packets** view (hex dump,
+byte interpreter, decoded field tree) and an **Opcodes** view (counts, size
+ranges, decode status, draft schema). Paths, wire framing and the static AES
+key live in [`decoder/decoder.toml`](decoder/decoder.toml).
+
+```bash
+cd decoder && uv venv && uv pip install -e '.[dev]'
+python3 -m decoder.web                              # http://127.0.0.1:8000
+python3 -m decoder.analyze pcap/session.pcap        # framing brute-force + hexdump
+```
+
+Needs the protocol catalog (run `exporters.extract_protocol` first). Captures in
+`decoder/pcap/` and the analysis cache in `decoder/.cache/` are git-ignored:
+they carry real session data — account code, device ID and hardware names,
+character list, per-session key material — so don't share them. Details in
+[`decoder/README.md`](decoder/README.md).
+
 ## Layout
 
 ```
 client/                  client host redirect, table typing, protocol catalog
+decoder/                 pcap decrypt/decode + web inspector
+decoder/pcap/            captures to analyze (git-ignored, sensitive)
+decoder/.cache/          per-capture analysis cache (git-ignored, sensitive)
 launcher/                launcher config decrypt/encrypt
 patcher/                 patch-server mirror downloader
 resources/               local, git-ignored inputs/outputs (leaked client data)
