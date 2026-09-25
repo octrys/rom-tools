@@ -2,14 +2,33 @@
 
 Tools for the ROM: Golden Age **client** — redirecting its infrastructure hosts
 (`patchers/metadata_host.py`, `patchers/resources_host.py`), reading and rewriting
-GameGuard's own encrypted config (`patchers/gameguard_config.py`), turning the
-runtime table dump into typed JSON (`exporters/extract_tables.py`), rebuilding the network-protocol catalog
-(`exporters/extract_protocol.py`), and projecting the typed tables into the
-server-facing gamedata set (`exporters/export_gamedata.py`).
+GameGuard's own encrypted config (`patchers/gameguard_config.py`), decoding the
+game-data tables (`datatables/`), and rebuilding the network-protocol catalog
+(`exporters/extract_protocol.py`).
 
-The data exporters live under [`exporters/`](exporters/) and are run from this
-directory as modules (`python3 -m exporters.<tool>`) so they can import the
-shared [`libs/`](libs/) package.
+Both are run from this directory as modules (`python3 -m datatables <command>`,
+`python3 -m exporters.extract_protocol`).
+
+## datatables — offline table decoder
+
+[`datatables/`](datatables/) decodes every game-data table straight from the
+patch bundle (`tablecrypto.unity`) into JSON (English text), with enum values
+as member names. It also writes an annotated
+column schema. Row layouts are inferred once per build against rom-frida's
+runtime dump; after that, decoding needs only the bundle. Input paths live in
+[`datatables/datatables.toml`](datatables/datatables.toml); details in
+[`datatables/README.md`](datatables/README.md).
+
+```bash
+uv run --with 'UnityPy>=1.25' python3 -m datatables infer    # once per build
+uv run --with 'UnityPy>=1.25' python3 -m datatables decode   # -> resources/datatables/tables/
+```
+
+Field names are recovered from the UI: rom-frida's `trace_ui_text.js` records
+what the game displays, `datatables uitrace` matches it against the decoded
+tables (accumulating every trace), and `datatables suggest` writes one entry per
+obfuscated identifier to [`datatables/names.toml`](datatables/names.toml) for
+review. Confirmed names are applied by `decode` and carried across builds.
 
 ## Host redirect
 
@@ -156,62 +175,6 @@ copy first and **falls back to the client-root copy** when that is missing —
 both are verified the same way, so patch both. The two are **not** identical
 (they differ in one flag value), because GameGuard restores its own copy.
 
-## exporters/extract_tables.py — runtime table dump → typed, named JSON
-
-The shipped bundle can only be decoded losslessly offline (raw bytes): its
-on-wire field order is bespoke, and some values are resolved only at runtime
-(localized names, `.unity`-suffixed scene paths). This tool instead consumes the
-**runtime** dump from rom-frida's `dump_tables.js`
-(`resources/tables_runtime.json`) — every table's rows, fully parsed and
-resolved, keyed by il2cpp-**obfuscated** field names with enum values as raw
-integers — and makes it readable:
-
-1. **Enum resolution** — every enum value becomes its member name (enum members
-   are *not* obfuscated), e.g. `2 → "MT_FIELD"`, using the type model parsed
-   from `rom_dump.cs`.
-2. **Field naming** — obfuscated names are renamed via
-   [`table_names.toml`](exporters/table_names.toml), a curated map with four scopes,
-   most specific first: `[tables.<Table>]` (a table's top-level fields),
-   `[types.<Struct>]` (shared nested value types, named once), `[enums]`
-   (keyed by the obfuscated enum *type* — since enum members aren't obfuscated,
-   naming an enum once names every field of that type across all tables), and
-   `[global]` (an identifier the obfuscator reuses everywhere). Unmapped fields
-   keep their obfuscated name — nothing is lost — and `_coverage.json` tracks
-   progress so naming can be driven top-down (see `libs/profile_fields.py`).
-
-Config-driven ([`extract_tables.toml`](exporters/extract_tables.toml)), standard
-library only (Python 3.11+ for `tomllib`). Reads the frida artifacts, so run those
-first (see the `rom-frida` repo) and place `rom_dump.cs` + `tables_runtime.json`
-under `resources/`.
-
-```bash
-python3 -m exporters.extract_tables    # reads exporters/extract_tables.toml
-```
-
-Writes one typed `<Table>.json` per table into the configured output dir, plus
-`_coverage.json` (named vs. obfuscated fields per table). Shared internal code
-lives in [`libs/`](libs/):
-
-- `libs/table_schema.py` — the dump parser, imported by the tool.
-- `libs/inspect_table.py` — dev helper that dumps one table's fields + sample
-  values to drive naming: `python3 -m libs.inspect_table <Table>`.
-- `libs/profile_fields.py` — dev helper that profiles **all** tables at once.
-  Because the obfuscation is consistent (one original name → one obfuscated
-  string everywhere), the naming unit is the set of distinct `(struct, field)`
-  pairs, not the tables. It aggregates each field's type, how many tables use it,
-  sample values, and whether `table_names.toml` already names it, then ranks the
-  unnamed ones by impact (tables, then rows) so naming can go top-down —
-  highest-frequency fields first. Enum fields are especially informative, since
-  their member names aren't obfuscated (`PT_ITEM`, `EOT_MAX_HP`, …).
-
-  ```bash
-  python3 -m libs.profile_fields             # ranked unnamed fields (top 60)
-  python3 -m libs.profile_fields --limit 40  # top N unnamed
-  python3 -m libs.profile_fields --all       # include already-named fields
-  ```
-
-  Also writes the full profile to `<output>/_fields.json` for programmatic use.
-
 ## exporters/extract_protocol.py — network-protocol catalog → JSON
 
 Rebuilds the message catalog the server speaks: **985 messages** with opcodes,
@@ -244,5 +207,5 @@ and re-run to remigrate the catalog.
 ## Requirements
 
 - `patchers/metadata_host.py`, `patchers/resources_host.py`, `patchers/gameguard_config.py`: Python 3.10+ (standard library only)
-- `exporters/extract_tables.py`: Python 3.11+ (`tomllib`), standard library only
+- `datatables/`: Python 3.11+ (`tomllib`) and `UnityPy>=1.25`
 - `exporters/extract_protocol.py`: Python 3.11+ (`tomllib`), standard library only

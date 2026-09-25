@@ -1,0 +1,38 @@
+# Configuration for datatables (python3 -m datatables <command>).
+# Relative paths resolve against this file's directory.
+
+[paths]
+# The table bundle from the patch (not encrypted despite the name).
+bundle = "../../resources/patch/real/patch/Windows/tablecrypto.unity"
+
+# rom-frida's dump_client.js output — type model: row structs, enums, table -> row type.
+dump_cs = "../../resources/rom_dump.cs"
+
+# rom-frida's dump_tables.js output — ground truth the layouts are inferred and
+# verified against. Must come from the SAME build as dump_cs (obfuscated names
+# change every build). Only `infer`, `verify` and `schema` read it.
+runtime = "../../resources/tables_runtime.json"
+
+# Everything the tool writes: layouts.json (infer), schema.json (schema),
+# tables/<Table>.json (decode), traces/ + evidence.json (uitrace).
+output = "../../resources/datatables"
+
+# Readable names for obfuscated identifiers — curated, committed (see names.py).
+names = "names.toml"
+
+[decode]
+# Write enum-typed values as member names (BT_BUFF; flag sets as "A|B") instead
+# of integers. Needs dump_cs.
+enum_names = true
+
+# Rename obfuscated fields from names.toml: "confirmed" entries only, "all"
+# (suggestions too), or "none".
+names = "all"
+
+[infer]
+sample_rows = 24          # rows searched at once (more = fewer false layouts, slower)
+max_rounds = 12           # counterexample-driven restarts per table
+node_budget = 400000      # search nodes per round
+time_budget = 60          # seconds per table
+max_skips = 6             # binary values with no runtime counterpart, per record
+max_element_layouts = 64  # candidate element layouts checked per list of structs

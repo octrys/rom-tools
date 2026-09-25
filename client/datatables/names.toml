@@ -1,0 +1,348 @@
+# Readable names for obfuscated identifiers — see datatables/names.py.
+# `python -m datatables suggest` re-keys entries to the current build (via
+# `anchor`) and regenerates the "suggested" ones from the evidence; entries
+# with status = "confirmed" are never changed. To accept a suggestion, fix its
+# name if needed and set status = "confirmed".
+
+# ---- suggested (37) --------------------------------------------------
+
+[DNIEOGFIAHC]
+name = "index"
+status = "suggested"
+anchor = "AbilityOption/0"
+score = 1095.0
+evidence = [
+  "index <- row key in 95 tables",
+]
+
+[DCFHLDBOFHD]
+name = "area"
+status = "suggested"
+anchor = "Warp_Data/2"
+score = 304.0
+evidence = [
+  "area <- ui text: Warp_Data.DCFHLDBOFHD shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, CUIAreaMapPoint/Text_LocalName (304 records)",
+]
+
+[LFEOJGHOCLC]
+name = "area"
+status = "suggested"
+anchor = "Map_Data/2"
+score = 269.0
+evidence = [
+  "area <- ui text: Map_Data.LFEOJGHOCLC shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, CUIAreaMapPoint/Text_LocalName (269 records)",
+]
+
+[LPIAPNCHNIP]
+name = "costumeComposeIndex"
+status = "suggested"
+anchor = "Costume_Compose/0"
+score = 102.0
+evidence = [
+  "costumeComposeIndex <- row key of Costume_Compose, Pet_Compose",
+]
+
+[IINBGPGEECM]
+name = "itemMatchIndex"
+status = "suggested"
+anchor = "Item_Data/1"
+score = 102.0
+evidence = [
+  "itemMatchIndex <- row key of Item_Match, Item_Weapon_Group_Data",
+]
+
+[OPONJFMEBMC]
+name = "mapDataStrongholdWarIndex"
+status = "suggested"
+anchor = "MapData_StrongholdWar/0"
+score = 102.0
+evidence = [
+  "mapDataStrongholdWarIndex <- row key of MapData_StrongholdWar, WorldMap",
+]
+
+[BBGEDDCCJBM]
+name = "runeLineCntIndex"
+status = "suggested"
+anchor = "Rune_Line_Cnt/0"
+score = 102.0
+evidence = [
+  "runeLineCntIndex <- row key of Rune_Line_Cnt, Rune_Line_Color",
+]
+
+[MHDNDMFDPGD]
+name = "achieveCategoryIndex"
+status = "suggested"
+anchor = "AchieveCategory/0"
+score = 101.0
+evidence = [
+  "achieveCategoryIndex <- row key of AchieveCategory",
+]
+
+[DMPCCDGGGOG]
+name = "auctionLevelIndex"
+status = "suggested"
+anchor = "AuctionLevel/0"
+score = 101.0
+evidence = [
+  "auctionLevelIndex <- row key of AuctionLevel",
+]
+
+[HJAMOMKKHFP]
+name = "cChangeItemIndex"
+status = "suggested"
+anchor = "CChange_Item/0"
+score = 101.0
+evidence = [
+  "cChangeItemIndex <- row key of CChange_Item",
+]
+
+[HNHMHGOJOFO]
+name = "cChangeJewelIndex"
+status = "suggested"
+anchor = "CChange_Jewel/0"
+score = 101.0
+evidence = [
+  "cChangeJewelIndex <- row key of CChange_Jewel",
+]
+
+[EDPFMKAIECB]
+name = "enchantItemTypeIndex"
+status = "suggested"
+anchor = "EnchantItem_Type/0"
+score = 101.0
+evidence = [
+  "enchantItemTypeIndex <- row key of EnchantItem_Type",
+]
+
+[IGCMAOAOKPK]
+name = "eryndorPromotionIndex"
+status = "suggested"
+anchor = "Eryndor_Promotion/0"
+score = 101.0
+evidence = [
+  "eryndorPromotionIndex <- row key of Eryndor_Promotion",
+]
+
+[CLNEFEEPMMH]
+name = "eventIndex"
+status = "suggested"
+anchor = "Event/0"
+score = 101.0
+evidence = [
+  "eventIndex <- row key of Event",
+]
+
+[CHKAOCAFHFJ]
+name = "guildGiftDataIndex"
+status = "suggested"
+anchor = "CommissionData/1"
+score = 101.0
+evidence = [
+  "guildGiftDataIndex <- row key of GuildGift_Data",
+]
+
+[CBODILNOCOD]
+name = "itemAwakeningIndex"
+status = "suggested"
+anchor = "Item_Awakening/0"
+score = 101.0
+evidence = [
+  "itemAwakeningIndex <- row key of Item_Awakening",
+]
+
+[DOAHGHCIODO]
+name = "makeCategoryIndex"
+status = "suggested"
+anchor = "Make_Category/0"
+score = 101.0
+evidence = [
+  "makeCategoryIndex <- row key of Make_Category",
+]
+
+[BKJFHEKKOFL]
+name = "monolithDataIndex"
+status = "suggested"
+anchor = "Monolith_Data/0"
+score = 101.0
+evidence = [
+  "monolithDataIndex <- row key of Monolith_Data",
+]
+
+[CLIOJLCAJKE]
+name = "monsterComposeIndex"
+status = "suggested"
+anchor = "Monster_CollectionData/5"
+score = 101.0
+evidence = [
+  "monsterComposeIndex <- row key of Monster_Compose",
+]
+
+[OBEHDNPJHOK]
+name = "petAdventureIndex"
+status = "suggested"
+anchor = "Pet_Adventure/0"
+score = 101.0
+evidence = [
+  "petAdventureIndex <- row key of Pet_Adventure",
+]
+
+[KCLFDHAAMEM]
+name = "questGuildBoxIndex"
+status = "suggested"
+anchor = "QuestGuild_Box/0"
+score = 101.0
+evidence = [
+  "questGuildBoxIndex <- row key of QuestGuild_Box",
+]
+
+[FMJNGPHOCKG]
+name = "realmEditIndex"
+status = "suggested"
+anchor = "Realm_Edit/0"
+score = 101.0
+evidence = [
+  "realmEditIndex <- row key of Realm_Edit",
+]
+
+[FKGIKFCOPCC]
+name = "runeComposeIndex"
+status = "suggested"
+anchor = "Rune_Compose/0"
+score = 101.0
+evidence = [
+  "runeComposeIndex <- row key of Rune_Compose",
+]
+
+[CHLMMMIHNIN]
+name = "siegeWarfareMecenaryIndex"
+status = "suggested"
+anchor = "SiegeWarfare_Mecenary/0"
+score = 101.0
+evidence = [
+  "siegeWarfareMecenaryIndex <- row key of SiegeWarfare_Mecenary",
+]
+
+[AIBAPEMMMEO]
+name = "worldLevelMin"
+status = "suggested"
+anchor = "Map_Data/13/1"
+score = 55.1
+evidence = [
+  "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Field/Text_WorldLevel, 57 records, 97% precise, e.g. Map_Data[108] \"61. [W] Dragon Harbor\" -> \"(Lv 95~97)\"",
+  "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Dungeon/Text_WorldLevel [UI_MainHUD_MenuName_Dungeon], 16 records, 100% precise, e.g. Map_Data[101] \"43. Underwater Corridor\" -> \"(Lv 66~67)\"",
+  "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Town/Text_WorldLevel, 10 records, 100% precise, e.g. Map_Data[36] \"34. Darkville\" -> \"(Lv 79~80)\"",
+]
+
+[KMBKKPECHJK]
+name = "worldLevelMax"
+status = "suggested"
+anchor = "Map_Data/13/2"
+score = 44.1
+evidence = [
+  "worldLevelMax <- ui: Map_Data.BAEHJKGLEPM.KMBKKPECHJK <- Btn_Field/Text_WorldLevel, 51 records, 86% precise, e.g. Map_Data[108] \"61. [W] Dragon Harbor\" -> \"(Lv 95~97)\"",
+  "worldLevelMax <- ui: Map_Data.BAEHJKGLEPM.KMBKKPECHJK <- Btn_Town/Text_WorldLevel, 9 records, 90% precise, e.g. Map_Data[36] \"34. Darkville\" -> \"(Lv 79~80)\"",
+]
+
+[JJONJBHFIIM]
+name = "localLevel"
+status = "suggested"
+anchor = "Npc_Data/8"
+score = 38.0
+evidence = [
+  "localLevel <- ui text: Npc_Data.JJONJBHFIIM shown in CUIAreaMapPoint/Text_LocalLevel, HeadMove/CharacterName, Img_Map/Party_Pin (38 records)",
+]
+
+[BIEOKCMMNBC]
+name = "characterName"
+status = "suggested"
+anchor = "Monster_Data_v1/4"
+score = 35.0
+evidence = [
+  "characterName <- ui text: Monster_Data_v1.BIEOKCMMNBC shown in HeadMove/CharacterName, CUIAreaMapPoint/Text_LocalName, Img_Map/Party_Pin (35 records)",
+]
+
+[JPNDIFGPCPN]
+name = "characterName"
+status = "suggested"
+anchor = "Monster_CollectionData/4"
+score = 34.0
+evidence = [
+  "characterName <- ui text: Monster_CollectionData.JPNDIFGPCPN shown in HeadMove/CharacterName, CUIAreaMapPoint/Text_LocalName, Img_Map/Party_Pin (34 records)",
+]
+
+[COBIGMMMLJP]
+name = "name"
+status = "suggested"
+anchor = "AbilityType_v1/3"
+score = 22.0
+evidence = [
+  "conflict: evidence also suggests area, worldName",
+  "name <- ui text: Store.CLEHCECAGFF.COBIGMMMLJP shown in Total_InfoSlot/Text_Name (22 records)",
+  "worldName <- ui text: QuestMainData.FDBAILICFPC.COBIGMMMLJP shown in Btn_Field/Text_WorldName, GroupName_InfoSlot/Text_Area, DMG/Count_Text (15 records)",
+  "area <- ui text: QuestEpisodeData.FDBAILICFPC.COBIGMMMLJP shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, Btn_Castle/Text_WorldName (13 records)",
+  "worldName <- ui text: Map_Data.PHLMAFEGEKD.COBIGMMMLJP shown in Btn_Field/Text_WorldName, GroupName_InfoSlot/Text_Area, CUIAreaMapPoint/Text_LocalName (7 records)",
+  "worldName <- ui text: ObjectData.COBIGMMMLJP shown in Btn_Town/Text_WorldName, GroupName_InfoSlot/Text_Area (6 records)",
+]
+
+[COHICBKLBKH]
+name = "localName"
+status = "suggested"
+anchor = "Npc_Data/7"
+score = 17.0
+evidence = [
+  "localName <- ui text: Npc_Data.COHICBKLBKH shown in CUIAreaMapPoint/Text_LocalName, TopLabel/HUDLabel, Btn_ConquerorShop/Text_Name (17 records)",
+]
+
+[ENCPFFLCMBN]
+name = "name"
+status = "suggested"
+anchor = "NPC_Shop/2/0"
+score = 8.0
+evidence = [
+  "name <- ui text: NPC_Shop.ADMEDPMNAMP.ENCPFFLCMBN shown in Btn_EventChange/Text_Name, Btn_EquipmentShop/Text_Name, Btn_GuildShop/Text_Name (8 records)",
+]
+
+[DJFKLOPBKCP]
+name = "drop"
+status = "suggested"
+anchor = "AchieveCategory/2"
+score = 3.0
+evidence = [
+  "drop <- ui text: AchieveCategory.DJFKLOPBKCP shown in Tab_Drop/Text_Drop (3 records)",
+]
+
+[CJFLEJEPHKM]
+name = "localName"
+status = "suggested"
+anchor = "Map_Data/19"
+score = 3.0
+evidence = [
+  "localName <- ui: Map_Data.CJFLEJEPHKM <- CUIAreaMapPoint/Text_LocalName [ResetType_Week], 3 records, 100% precise, e.g. Map_Data[42] \"Underground Shrine B2\" -> \"Underground Shrine B2\"",
+]
+
+[MLALGFLOAFN]
+name = "localName"
+status = "suggested"
+anchor = "Map_Data/12"
+score = 3.0
+evidence = [
+  "localName <- ui: Map_Data.MLALGFLOAFN <- CUIAreaMapPoint/Text_LocalName [ResetType_Week], 3 records, 100% precise, e.g. Map_Data[42] \"Underground Shrine B2\" -> \"Underground Shrine B2\"",
+]
+
+[EIAGJCDKCEN]
+name = "localName"
+status = "suggested"
+anchor = "Pet_Data/3"
+score = 3.0
+evidence = [
+  "localName <- ui text: Pet_Data.EIAGJCDKCEN shown in CUIAreaMapPoint/Text_LocalName, HeadMove/CharacterName (3 records)",
+]
+
+[NOHLEFCNDPA]
+name = "goods"
+status = "suggested"
+anchor = "ServerTransfer_Check/7"
+score = 3.0
+evidence = [
+  "goods <- ui values: Warp_Data.JAAKNNEDJJM.NOHLEFCNDPA holds all 6 values of Cost/Text_Goods [ResetType_Week, WorldMap_UI_NowMove] (37 distinct in column)",
+]

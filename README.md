@@ -43,7 +43,7 @@ python3 patch_downloader.py --component launcher
 
 Standard library only. Details in [`patcher/README.md`](patcher/README.md).
 
-### [`client/`](client/) — host redirect, table typing, protocol catalog
+### [`client/`](client/) — host redirect, table decoder, protocol catalog
 
 Detailed in [`client/README.md`](client/README.md):
 
@@ -65,16 +65,44 @@ python3 client/patchers/metadata_host.py global-metadata.dat --new-host 192.168.
 python3 client/patchers/resources_host.py resources.assets --patch-host patch.example.internal --auth-host auth.example.internal --out resources.assets.patched
 ```
 
-**Data extraction** — `exporters/extract_tables.py` turns the runtime table dump
-(from rom-frida's `dump_tables.js`) into typed, named JSON for the server: it
-resolves every enum to its member name and renames obfuscated fields via a
-curated map. Config-driven
-([`exporters/extract_tables.toml`](client/exporters/extract_tables.toml)),
-standard library only. Run the frida dump first and drop `rom_dump.cs` +
-`tables_runtime.json` under `resources/`.
+**Table decoder** — `datatables/` decodes every table straight from
+the patch bundle (`tablecrypto.unity`) into JSON (English text), with enum
+values as member names. Row layouts are learned once per
+build against rom-frida's runtime dump (`rom_dump.cs` + `tables_runtime.json`,
+dropped under `resources/`); after that, decoding needs only the
+bundle. Paths are set in
+[`datatables/datatables.toml`](client/datatables/datatables.toml). Needs
+UnityPy.
 
 ```bash
-cd client && python3 -m exporters.extract_tables    # reads exporters/extract_tables.toml
+cd client && uv run --with 'UnityPy>=1.25' python3 -m datatables decode
+```
+
+**Field names** — obfuscated field names are recovered from the UI: rom-frida's
+`trace_ui_text.js` records what the game displays, `datatables uitrace`
+matches every trace against the decoded tables, and `datatables suggest`
+writes one entry per obfuscated identifier to
+[`datatables/names.toml`](client/datatables/names.toml). Each entry has a
+`status`:
+
+- `suggested` — generated from the evidence, and regenerated on every
+  `suggest` run: the draft name can change when new traces come in.
+- `confirmed` — reviewed by hand (edit the name, set `status = "confirmed"`).
+  The tool never changes these, except to re-key them to a new build's
+  obfuscated name.
+
+`[decode].names` in `datatables.toml` picks what `decode` applies:
+
+| Value | Applied |
+|---|---|
+| `confirmed` | confirmed entries only: field names change only when someone approves one (the default when unset) |
+| `all` | confirmed and suggested: more fields named, but a suggestion can rename a field between runs (the current setting) |
+| `none` | nothing: every field keeps its obfuscated name |
+
+```bash
+cd client
+uv run --with 'UnityPy>=1.25' python3 -m datatables uitrace /mnt/c/.../rom-frida/storage/ui_trace_*.jsonl
+uv run --with 'UnityPy>=1.25' python3 -m datatables suggest
 ```
 
 **Protocol catalog** — `exporters/extract_protocol.py` rebuilds the message
@@ -115,16 +143,17 @@ character list, per-session key material — so don't share them. Details in
 ## Layout
 
 ```
-client/                  client host redirect, table typing, protocol catalog
+client/                  client host redirect, table decoder, protocol catalog
 decoder/                 pcap decrypt/decode + web inspector
 decoder/pcap/            captures to analyze (git-ignored, sensitive)
 decoder/.cache/          per-capture analysis cache (git-ignored, sensitive)
 launcher/                launcher config decrypt/encrypt
 patcher/                 patch-server mirror downloader
 resources/               local, git-ignored inputs/outputs (leaked client data)
-resources/rom_dump.cs    il2cpp dump (rom-frida) — type model for exporters/extract_tables.py
-resources/tables_runtime.json  runtime table dump (rom-frida) — exporters/extract_tables.py input
-resources/tables_typed/  typed, named tables (JSON) + _coverage.json — output
+resources/rom_dump.cs    il2cpp dump (rom-frida) — type model for datatables
+resources/rom_dump.json  il2cpp type dump (rom-frida) — field types for exporters/extract_protocol.py
+resources/tables_runtime.json  runtime table dump (rom-frida) — ground truth for datatables infer/verify
+resources/datatables/    datatables output: layouts.json, schema.json, evidence.json, traces/, tables/<Table>.json
 resources/client/        full client install (GameAssembly.dll, ROMGoldenAge_Data)
 resources/launcher/      launcher configs (encrypted + decrypted)
 tmp/                     scratch for bulk patch downloads (git-ignored)
