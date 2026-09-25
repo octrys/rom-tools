@@ -95,8 +95,8 @@ writes one entry per obfuscated identifier to
 
 | Value | Applied |
 |---|---|
-| `confirmed` | confirmed entries only: field names change only when someone approves one (the default when unset) |
-| `all` | confirmed and suggested: more fields named, but a suggestion can rename a field between runs (the current setting) |
+| `confirmed` | confirmed entries only: field names change only when someone approves one (the default, and the current setting) |
+| `all` | confirmed and suggested: more fields named, but a suggestion can rename a field between runs |
 | `none` | nothing: every field keeps its obfuscated name |
 
 ```bash

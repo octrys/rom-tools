@@ -27,7 +27,7 @@ enum_names = true
 
 # Rename obfuscated fields from names.toml: "confirmed" entries only, "all"
 # (suggestions too), or "none".
-names = "all"
+names = "confirmed"
 
 [infer]
 sample_rows = 24          # rows searched at once (more = fewer false layouts, slower)

@@ -41,6 +41,14 @@ HEADER = """\
 """
 LABEL_PREFIXES = ("Text_", "Txt_", "Lbl_", "Label_", "TMP_", "UIText_")
 GENERIC_LEAVES = {"", "Text", "UIText", "Label", "Value", "TMP"}
+# Drafts that say nothing about a column (`Text_2`, `Text_Off`, `Mask/Text_Info`):
+# a number column falls back to "value", other evidence is dropped.
+GENERIC_DRAFTS = {"number", "info", "on", "off", "after", "before", "menu", "drop", "type", "text", "count",
+                  "countText", "desc", "sub", "main", "content", "slot", "icon", "btn", "button", "tab"}
+STATE_WEIGHT = 5  # a game field name outweighs a UI label: it is the programmer's name for the value
+HUNGARIAN_RE = re.compile(r"^(?:v|n|s|f|b|bl|str|txt|text|list|arr|dic|dict|e|i|l|u|ul|d|go|tr|img|tm|tmp)(?=[A-Z])")
+MIN_ANCHOR_RECORDS = 10  # a string column needs this many records to be named after its label
+MIN_ANCHOR_SHARE = 0.5  # ... and its top label must hold this share of them (not a coincidence across screens)
 
 
 @dataclass
@@ -159,9 +167,15 @@ def camel(words: list[str]) -> str:
     return words[0][:1].lower() + words[0][1:] + "".join(w[:1].upper() + w[1:] for w in words[1:])
 
 
-def draft_name(label: str, position: int | None = None, count: int = 1, ranged: bool = False) -> str:
+def generic(draft: str) -> bool:
+    return not draft or not draft[0].isalpha() or draft in GENERIC_DRAFTS
+
+
+def draft_name(label: str, position: int | None = None, count: int = 1, ranged: bool = False,
+               fallback: str = "") -> str:
     """A starting point from the UI label: 'Btn_Field/Text_WorldLevel', first of
-    'Lv 95~97' -> 'worldLevelMin'. Meant to be edited when confirming."""
+    'Lv 95~97' -> 'worldLevelMin'. A label that names nothing ('Text_2') gives
+    `fallback` ('' = no draft). Meant to be edited when confirming."""
     parent, _, leaf = label.rpartition("/")
     for part in (leaf, parent):
         core = part
@@ -172,9 +186,28 @@ def draft_name(label: str, position: int | None = None, count: int = 1, ranged: 
         if core not in GENERIC_LEAVES:
             break
     name = camel(re.split(r"[_\s]+", core))
+    if generic(name):
+        name = fallback
+        if not name:
+            return ""
     if count > 1 and position is not None:
         name += ("Min", "Max")[position] if ranged and count == 2 and position < 2 else str(position + 1)
     return name
+
+
+def code_name(field: str) -> str:
+    """A game field name -> a draft: 'm_vMapSize' -> 'mapSize', 'm_nMapID' ->
+    'mapID', 'm_X' -> 'x', '_nWarpIndex' -> 'warpIndex', 'm_txtTitle' -> 'title'."""
+    if field.endswith("__"):  # compiler-made (value__)
+        return ""
+    name = field
+    for prefix in ("m_", "_"):
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+            break
+    name = HUNGARIAN_RE.sub("", name)
+    name = name[:1].lower() + name[1:]
+    return "" if generic(name) else name
 
 
 def id_columns(tables: dict[str, dict]) -> dict[str, list[str]]:
@@ -208,16 +241,35 @@ def candidates(evidence: dict, ids: dict[str, list[str]]) -> dict[str, list[tupl
         if c["kind"] == "number":
             if c["precision"] < MIN_PRECISION:
                 continue
-            draft = draft_name(c["label"], c["position"], c["numbers"], c["range"])
+            draft = draft_name(c["label"], c["position"], c["numbers"], c["range"], fallback="value")
+            scale = f", shown / {c['scale']}" if c.get("scale", 1) != 1 else ""
             line = (f"ui: {col} <- {c['label']}{captions}, {c['records']} records, "
-                    f"{c['precision']:.0%} precise, e.g. {c['examples'][0]}")
+                    f"{c['precision']:.0%} precise{scale}, e.g. {c['examples'][0]}")
             out[ident].append((c["records"] * c["precision"], draft, line))
         elif c["kind"] == "anchor":
+            share = c["labels"][0][1] / sum(n for _, n in c["labels"])
+            if c["records"] < MIN_ANCHOR_RECORDS or share < MIN_ANCHOR_SHARE or not (draft := draft_name(c["label"])):
+                continue
             labels = ", ".join(lab for lab, _ in c["labels"][:3])
-            out[ident].append((float(c["records"]), draft_name(c["label"]),
+            out[ident].append((float(c["records"]), draft,
                                f"ui text: {col} shown in {labels} ({c['records']} records)"))
+        elif c["kind"] == "state":
+            if c["precision"] < MIN_PRECISION:
+                continue
+            fields = c["label"].split(".")[1:]  # "CMapManager.m_vMapSize.m_X" -> m_vMapSize, m_X
+            weight = STATE_WEIGHT * c["records"] * c["precision"]
+            scale = f", shown / {c['scale']}" if c.get("scale", 1) != 1 else ""
+            line = (f"state: {col} == {c['label']}, {c['records']} snapshots ({c['values']} values), "
+                    f"{c['precision']:.0%} precise{scale}, e.g. {c['examples'][0]}")
+            if draft := code_name(fields[-1]):
+                out[ident].append((weight, draft, line))
+            # the struct around it: MFGNLFAOAGB.BPFBMIDLJKI == m_vMapSize.m_X -> MFGNLFAOAGB is mapSize
+            if len(fields) > 1 and "." in c["path"] and (parent := code_name(fields[-2])):
+                out[identifier(c["path"].rsplit(".", 1)[0])].append((weight / 2, parent, line))
         elif c["kind"] == "valueset":
-            out[ident].append((c["values"] * 0.5, draft_name(c["label"]),
+            if not (draft := draft_name(c["label"])):
+                continue
+            out[ident].append((c["values"] * 0.5, draft,
                                f"ui values: {col} holds all {c['values']} values of {c['label']}{captions} "
                                f"({c['distinct']} distinct in column)"))
     return out

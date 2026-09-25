@@ -56,15 +56,28 @@ identifier**: naming `NOHLEFCNDPA` once names it in all 49 tables that use it.
 
 **Evidence from the UI.** rom-frida's `trace_ui_text.js` records every text the
 UI displays, with its GameObject path (plaintext, e.g. `Btn_Field/Text_WorldLevel`)
-and the Localization caption keys. Play, open the windows whose tables you want
-named, and feed the traces to `uitrace`. It keeps every trace in `traces/` and
-analyses all of them together, so evidence accumulates across sessions:
+and frame, every table row the game reads by key, and the Localization caption
+keys. Play, open the windows whose tables you want named, and feed the traces
+to `uitrace`. It keeps every trace in `traces/` and analyses all of them
+together, so evidence accumulates across sessions:
 
-- **anchor**: texts shown together form a record; one equal to a string cell
-  identifies the row (`"Dragon Harbor"` → `Map_Data[108]`), and the numbers
-  next to it are matched against that row only (`"(Lv 95~97)"` →
-  `BAEHJKGLEPM.AIBAPEMMMEO` = 95). Precision (matches / chances) separates the
-  source (~100%) from coincidences.
+- **anchor**: texts of one instance (a list cell, a map icon — else one
+  GameObject) shown in one frame form a record. Its candidate rows are the
+  rows with a string cell equal to one of its texts (`"Dragon Harbor"` →
+  `Map_Data[108]`) and the rows read right before its texts (the game reads
+  row *i*, then fills cell *i*). The numbers shown are matched against those
+  rows only (`"(Lv 95~97)"` → `BAEHJKGLEPM.AIBAPEMMMEO` = 95), as is or ÷1000
+  — rates are stored in thousandths (`AbilityOption.PPABCBFBBIN` 20000 →
+  `"+20%"`; the finding's `scale`). Precision (matches / chances) separates
+  the source (~100%) from coincidences and from rows read by game logic.
+- **state**: live game components that keep a table row in a field
+  (`CMapManager.m_sMapData`, the world map window, monster/NPC actors) are
+  snapshotted with their plaintext fields (`m_vMapSize`, `m_nMapID`, the text
+  of `m_txtTitle`…). The row is known by its key, so each value is compared
+  with that row only; a column needs 2+ snapshots with 2+ distinct values.
+  The draft is the game's own field name (`m_vMapSize.m_X` →
+  `MFGNLFAOAGB.BPFBMIDLJKI` gives `x`, and `mapSize` for the struct), weighted
+  above UI labels.
 - **valueset**: a label that showed several distinct values is matched against
   every column; the one holding all of them, with the fewest values of its
   own, wins (e.g. teleport costs → `Warp_Data.JAAKNNEDJJM.NOHLEFCNDPA`).
@@ -76,6 +89,15 @@ after a client update: `uitrace` re-matches them against the new tables.
 identifier in `names.toml`, with a draft name, a score and the evidence lines.
 Review them, fix the name, and set `status = "confirmed"`; confirmed entries are
 never changed by the tool and are what `decode` applies by default.
+
+Weak evidence is left out: number matches below 60% precision; string (anchor)
+matches with fewer than 10 records, or whose top label holds less than half of
+them — a string that shows up on unrelated screens is a coincidence. Drafts
+come from the UI label; one that names nothing (`Text_2`, `Text_Off`,
+`Mask/Text_Info`) becomes `value` for a number column and is dropped
+otherwise. Drafts are a starting point: the label is the UI's name for the
+widget, not the column's (`Text_Area` showed map names → confirmed as
+`mapName`).
 
 **Across builds.** Each entry has an `anchor`: its declaration position from a
 table's row type (`Warp_Data/4/2` = row field #4, its field #2). Table names

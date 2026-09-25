@@ -4,345 +4,429 @@
 # with status = "confirmed" are never changed. To accept a suggestion, fix its
 # name if needed and set status = "confirmed".
 
-# ---- suggested (37) --------------------------------------------------
-
-[DNIEOGFIAHC]
-name = "index"
-status = "suggested"
-anchor = "AbilityOption/0"
-score = 1095.0
-evidence = [
-  "index <- row key in 95 tables",
-]
-
-[DCFHLDBOFHD]
-name = "area"
-status = "suggested"
-anchor = "Warp_Data/2"
-score = 304.0
-evidence = [
-  "area <- ui text: Warp_Data.DCFHLDBOFHD shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, CUIAreaMapPoint/Text_LocalName (304 records)",
-]
-
-[LFEOJGHOCLC]
-name = "area"
-status = "suggested"
-anchor = "Map_Data/2"
-score = 269.0
-evidence = [
-  "area <- ui text: Map_Data.LFEOJGHOCLC shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, CUIAreaMapPoint/Text_LocalName (269 records)",
-]
-
-[LPIAPNCHNIP]
-name = "costumeComposeIndex"
-status = "suggested"
-anchor = "Costume_Compose/0"
-score = 102.0
-evidence = [
-  "costumeComposeIndex <- row key of Costume_Compose, Pet_Compose",
-]
-
-[IINBGPGEECM]
-name = "itemMatchIndex"
-status = "suggested"
-anchor = "Item_Data/1"
-score = 102.0
-evidence = [
-  "itemMatchIndex <- row key of Item_Match, Item_Weapon_Group_Data",
-]
-
-[OPONJFMEBMC]
-name = "mapDataStrongholdWarIndex"
-status = "suggested"
-anchor = "MapData_StrongholdWar/0"
-score = 102.0
-evidence = [
-  "mapDataStrongholdWarIndex <- row key of MapData_StrongholdWar, WorldMap",
-]
-
-[BBGEDDCCJBM]
-name = "runeLineCntIndex"
-status = "suggested"
-anchor = "Rune_Line_Cnt/0"
-score = 102.0
-evidence = [
-  "runeLineCntIndex <- row key of Rune_Line_Cnt, Rune_Line_Color",
-]
+# ---- confirmed (37) --------------------------------------------------
 
 [MHDNDMFDPGD]
 name = "achieveCategoryIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "AchieveCategory/0"
-score = 101.0
 evidence = [
   "achieveCategoryIndex <- row key of AchieveCategory",
 ]
 
+[NOHLEFCNDPA]
+name = "amount"
+status = "confirmed"
+anchor = "ServerTransfer_Check/7"
+evidence = [
+  "cost struct {payType (PT_*), payIndex, amount}, verified via the UI (Warp_Data teleport costs)",
+  "goodsValue <- ui: Store.JAAKNNEDJJM.NOHLEFCNDPA <- Goods_Body/Text_GoodsValue [Remain_UI_Reset_InitUntil], 9 records, 100% precise, e.g. Store[501020045] \"Costume Package\" -> \"100\"",
+  "goods <- ui values: Warp_Data.JAAKNNEDJJM.NOHLEFCNDPA holds all 15 values of Cost/Text_Goods [ResetType_Week, WorldMap_UI_NowMove] (37 distinct in column)",
+  "coin <- ui values: Warp_Data.JAAKNNEDJJM.NOHLEFCNDPA holds all 7 values of Check_Btn/Text_Coin [Stronghold_Enter] (37 distinct in column)",
+]
+
 [DMPCCDGGGOG]
 name = "auctionLevelIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "AuctionLevel/0"
-score = 101.0
 evidence = [
   "auctionLevelIndex <- row key of AuctionLevel",
 ]
 
 [HJAMOMKKHFP]
 name = "cChangeItemIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "CChange_Item/0"
-score = 101.0
 evidence = [
   "cChangeItemIndex <- row key of CChange_Item",
 ]
 
 [HNHMHGOJOFO]
 name = "cChangeJewelIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "CChange_Jewel/0"
-score = 101.0
 evidence = [
   "cChangeJewelIndex <- row key of CChange_Jewel",
 ]
 
+[LPIAPNCHNIP]
+name = "costumeComposeIndex"
+status = "confirmed"
+anchor = "Costume_Compose/0"
+evidence = [
+  "costumeComposeIndex <- row key of Costume_Compose, Pet_Compose",
+]
+
 [EDPFMKAIECB]
 name = "enchantItemTypeIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "EnchantItem_Type/0"
-score = 101.0
 evidence = [
   "enchantItemTypeIndex <- row key of EnchantItem_Type",
 ]
 
 [IGCMAOAOKPK]
 name = "eryndorPromotionIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "Eryndor_Promotion/0"
-score = 101.0
 evidence = [
   "eryndorPromotionIndex <- row key of Eryndor_Promotion",
 ]
 
 [CLNEFEEPMMH]
 name = "eventIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "Event/0"
-score = 101.0
 evidence = [
   "eventIndex <- row key of Event",
 ]
 
 [CHKAOCAFHFJ]
 name = "guildGiftDataIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "CommissionData/1"
-score = 101.0
 evidence = [
   "guildGiftDataIndex <- row key of GuildGift_Data",
 ]
 
+[JJGJIEJMNMM]
+name = "height"
+status = "confirmed"
+anchor = "Map_Data/4/1"
+evidence = [
+  "runtime (rom-frida inspect_map.js): CMapManager.m_vMapSize == Map_Data row size on Seva Oasis 300x300, Ancient Labyrinth B1 200x200, Linport 300x300",
+  "the map's cell grids (m_listHeightMap, m_listCellInfo, m_listZoneData, ...) hold exactly x*y cells: 1 cell per world unit",
+  "GetCellIndex(x, z) = floor(z) * width + floor(x)",
+  "all 677 maps are square: which field is x can't be told from values; width/height follows declaration order",
+]
+
+[DNIEOGFIAHC]
+name = "index"
+status = "confirmed"
+anchor = "AbilityOption/0"
+evidence = [
+  "index <- row key in 95 tables",
+  "itemCountText <- ui: Store_Hot.DNIEOGFIAHC <- Views/ItemCount_Text [Awakening_SET_FIVE, PC_MAGICIAN, SK_BUFF, SK_DEBUFF], 5 records, 83% precise, e.g. Store_Hot[6] read -> \"+6\"",
+]
+
 [CBODILNOCOD]
 name = "itemAwakeningIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "Item_Awakening/0"
-score = 101.0
 evidence = [
   "itemAwakeningIndex <- row key of Item_Awakening",
 ]
 
+[IINBGPGEECM]
+name = "itemMatchIndex"
+status = "confirmed"
+anchor = "Item_Data/1"
+evidence = [
+  "itemMatchIndex <- row key of Item_Match, Item_Weapon_Group_Data",
+]
+
+[KMBKKPECHJK]
+name = "levelMax"
+status = "confirmed"
+anchor = "Map_Data/13/2"
+evidence = [
+  "worldLevelMax <- ui: Map_Data.BAEHJKGLEPM.KMBKKPECHJK <- Btn_Field/Text_WorldLevel, 256 records, 90% precise, e.g. Map_Data[108] \"61. [W] Dragon Harbor\" -> \"(Lv 95~97)\"",
+  "worldLevelMax <- ui: Map_Data.BAEHJKGLEPM.KMBKKPECHJK <- Btn_Town/Text_WorldLevel, 40 records, 98% precise, e.g. Map_Data[36] \"34. Darkville\" -> \"(Lv 79~80)\"",
+]
+
+[AIBAPEMMMEO]
+name = "levelMin"
+status = "confirmed"
+anchor = "Map_Data/13/1"
+evidence = [
+  "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Field/Text_WorldLevel, 283 records, 99% precise, e.g. Map_Data[108] \"61. [W] Dragon Harbor\" -> \"(Lv 95~97)\"",
+  "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Dungeon/Text_WorldLevel [UI_MainHUD_MenuName_Dungeon], 82 records, 100% precise, e.g. Map_Data[101] \"43. Underwater Corridor\" -> \"(Lv 66~67)\"",
+  "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Town/Text_WorldLevel, 41 records, 100% precise, e.g. Map_Data[36] \"34. Darkville\" -> \"(Lv 79~80)\"",
+]
+
 [DOAHGHCIODO]
 name = "makeCategoryIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "Make_Category/0"
-score = 101.0
 evidence = [
   "makeCategoryIndex <- row key of Make_Category",
 ]
 
+[OPONJFMEBMC]
+name = "mapDataStrongholdWarIndex"
+status = "confirmed"
+anchor = "MapData_StrongholdWar/0"
+evidence = [
+  "mapDataStrongholdWarIndex <- row key of MapData_StrongholdWar, WorldMap",
+]
+
+[LFEOJGHOCLC]
+name = "mapName"
+status = "confirmed"
+anchor = "Map_Data/2"
+evidence = [
+  "area <- ui text: Map_Data.LFEOJGHOCLC shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, CUIAreaMapPoint/Text_LocalName (1620 records)",
+  "mapName <- ui values: Map_Data.LFEOJGHOCLC holds all 9 values of MapInfo/Map_Name (233 distinct in column)",
+  "mapName <- ui values: Map_Data.LFEOJGHOCLC holds all 9 values of BattleType/Text_MapName [BT_PRECAUSION] (233 distinct in column)",
+  "fXTextArea <- ui values: Map_Data.LFEOJGHOCLC holds all 9 values of FX_Move/FX_Text_Area (233 distinct in column)",
+]
+
+[MFGNLFAOAGB]
+name = "mapSize"
+status = "confirmed"
+anchor = "Map_Data/4"
+evidence = [
+  "runtime (rom-frida inspect_map.js): CMapManager.m_vMapSize == Map_Data row size on Seva Oasis 300x300, Ancient Labyrinth B1 200x200, Linport 300x300",
+  "the map's cell grids (m_listHeightMap, m_listCellInfo, m_listZoneData, ...) hold exactly x*y cells: 1 cell per world unit",
+  "GetCellIndex(x, z) = floor(z) * width + floor(x)",
+  "all 677 maps are square: which field is x can't be told from values; width/height follows declaration order",
+]
+
 [BKJFHEKKOFL]
 name = "monolithDataIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "Monolith_Data/0"
-score = 101.0
 evidence = [
   "monolithDataIndex <- row key of Monolith_Data",
 ]
 
 [CLIOJLCAJKE]
 name = "monsterComposeIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "Monster_CollectionData/5"
-score = 101.0
 evidence = [
   "monsterComposeIndex <- row key of Monster_Compose",
 ]
 
+[BIEOKCMMNBC]
+name = "monsterName"
+status = "confirmed"
+anchor = "Monster_Data_v1/4"
+evidence = [
+  "characterName <- ui text: Monster_Data_v1.BIEOKCMMNBC shown in HeadMove/CharacterName, Name_info/Text_Name, Img_Map/Party_Pin (269 records)",
+]
+
+[COBIGMMMLJP]
+name = "name"
+status = "confirmed"
+anchor = "AbilityType_v1/3"
+evidence = [
+  "shared name field: Store product name, map/scene names, quest titles",
+  "area <- ui text: QuestEpisodeData.FDBAILICFPC.COBIGMMMLJP shown in GroupName_InfoSlot/Text_Area, Btn_Castle/Text_WorldName, Btn_Field/Text_WorldName (91 records)",
+  "area <- ui text: QuestMainData.FDBAILICFPC.COBIGMMMLJP shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, Top/Tittle_Text (86 records)",
+  "name <- ui text: Store.CLEHCECAGFF.COBIGMMMLJP shown in Total_InfoSlot/Text_Name, Slot/Text_Item_Name, Store_TypeASlot/Text_ProductName (67 records)",
+]
+
+[JJONJBHFIIM]
+name = "npcName"
+status = "confirmed"
+anchor = "Npc_Data/8"
+evidence = [
+  "Npc_Data[10001]: JJONJBHFIIM = \"Fomiel\", COHICBKLBKH = \"Support Knight\"",
+  "localLevel <- ui text: Npc_Data.JJONJBHFIIM shown in CUIAreaMapPoint/Text_LocalLevel, Total_InfoSlot/Text_Desc, HeadMove/CharacterName (450 records)",
+]
+
+[COHICBKLBKH]
+name = "npcTitle"
+status = "confirmed"
+anchor = "Npc_Data/7"
+evidence = [
+  "Npc_Data[10001]: JJONJBHFIIM = \"Fomiel\", COHICBKLBKH = \"Support Knight\"",
+  "localName <- ui text: Npc_Data.COHICBKLBKH shown in CUIAreaMapPoint/Text_LocalName, Total_InfoSlot/Text_Name, Btn_ConquerorShop/Text_Name (253 records)",
+]
+
+[AOBEIGFKOPI]
+name = "payIndex"
+status = "confirmed"
+anchor = "ObjectData/2"
+evidence = [
+  "cost struct {payType (PT_*), payIndex, amount}, verified via the UI (Warp_Data teleport costs)",
+]
+
+[DFLAIOGCHDH]
+name = "payType"
+status = "confirmed"
+anchor = "AchieveData/14/0"
+evidence = [
+  "cost struct {payType (PT_*), payIndex, amount}, verified via the UI (Warp_Data teleport costs)",
+]
+
 [OBEHDNPJHOK]
 name = "petAdventureIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "Pet_Adventure/0"
-score = 101.0
 evidence = [
   "petAdventureIndex <- row key of Pet_Adventure",
 ]
 
 [KCLFDHAAMEM]
 name = "questGuildBoxIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "QuestGuild_Box/0"
-score = 101.0
 evidence = [
   "questGuildBoxIndex <- row key of QuestGuild_Box",
 ]
 
 [FMJNGPHOCKG]
 name = "realmEditIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "Realm_Edit/0"
-score = 101.0
 evidence = [
   "realmEditIndex <- row key of Realm_Edit",
 ]
 
 [FKGIKFCOPCC]
 name = "runeComposeIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "Rune_Compose/0"
-score = 101.0
 evidence = [
   "runeComposeIndex <- row key of Rune_Compose",
 ]
 
+[BBGEDDCCJBM]
+name = "runeLineCntIndex"
+status = "confirmed"
+anchor = "Rune_Line_Cnt/0"
+evidence = [
+  "runeLineCntIndex <- row key of Rune_Line_Cnt, Rune_Line_Color",
+]
+
 [CHLMMMIHNIN]
 name = "siegeWarfareMecenaryIndex"
-status = "suggested"
+status = "confirmed"
 anchor = "SiegeWarfare_Mecenary/0"
-score = 101.0
 evidence = [
   "siegeWarfareMecenaryIndex <- row key of SiegeWarfare_Mecenary",
 ]
 
-[AIBAPEMMMEO]
-name = "worldLevelMin"
-status = "suggested"
-anchor = "Map_Data/13/1"
-score = 55.1
+[PPABCBFBBIN]
+name = "value"
+status = "confirmed"
+anchor = "AbilityOption/3"
 evidence = [
-  "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Field/Text_WorldLevel, 57 records, 97% precise, e.g. Map_Data[108] \"61. [W] Dragon Harbor\" -> \"(Lv 95~97)\"",
-  "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Dungeon/Text_WorldLevel [UI_MainHUD_MenuName_Dungeon], 16 records, 100% precise, e.g. Map_Data[101] \"43. Underwater Corridor\" -> \"(Lv 66~67)\"",
-  "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Town/Text_WorldLevel, 10 records, 100% precise, e.g. Map_Data[36] \"34. Darkville\" -> \"(Lv 79~80)\"",
+  "value <- AbilityOption option value: 30 records, 100% (rates in thousandths: 20000 -> \"+20%\")",
 ]
 
-[KMBKKPECHJK]
-name = "worldLevelMax"
-status = "suggested"
-anchor = "Map_Data/13/2"
-score = 44.1
+[DCFHLDBOFHD]
+name = "warpName"
+status = "confirmed"
+anchor = "Warp_Data/2"
 evidence = [
-  "worldLevelMax <- ui: Map_Data.BAEHJKGLEPM.KMBKKPECHJK <- Btn_Field/Text_WorldLevel, 51 records, 86% precise, e.g. Map_Data[108] \"61. [W] Dragon Harbor\" -> \"(Lv 95~97)\"",
-  "worldLevelMax <- ui: Map_Data.BAEHJKGLEPM.KMBKKPECHJK <- Btn_Town/Text_WorldLevel, 9 records, 90% precise, e.g. Map_Data[36] \"34. Darkville\" -> \"(Lv 79~80)\"",
+  "area <- ui text: Warp_Data.DCFHLDBOFHD shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, CUIAreaMapPoint/Text_LocalName (1701 records)",
+  "name <- ui values: Warp_Data.DCFHLDBOFHD holds all 16 values of HUDPortal/Text_Name (386 distinct in column)",
 ]
 
-[JJONJBHFIIM]
-name = "localLevel"
-status = "suggested"
-anchor = "Npc_Data/8"
-score = 38.0
+[BPFBMIDLJKI]
+name = "width"
+status = "confirmed"
+anchor = "Map_Data/4/0"
 evidence = [
-  "localLevel <- ui text: Npc_Data.JJONJBHFIIM shown in CUIAreaMapPoint/Text_LocalLevel, HeadMove/CharacterName, Img_Map/Party_Pin (38 records)",
+  "runtime (rom-frida inspect_map.js): CMapManager.m_vMapSize == Map_Data row size on Seva Oasis 300x300, Ancient Labyrinth B1 200x200, Linport 300x300",
+  "the map's cell grids (m_listHeightMap, m_listCellInfo, m_listZoneData, ...) hold exactly x*y cells: 1 cell per world unit",
+  "GetCellIndex(x, z) = floor(z) * width + floor(x)",
+  "all 677 maps are square: which field is x can't be told from values; width/height follows declaration order",
 ]
 
-[BIEOKCMMNBC]
-name = "characterName"
-status = "suggested"
-anchor = "Monster_Data_v1/4"
-score = 35.0
-evidence = [
-  "characterName <- ui text: Monster_Data_v1.BIEOKCMMNBC shown in HeadMove/CharacterName, CUIAreaMapPoint/Text_LocalName, Img_Map/Party_Pin (35 records)",
-]
+# ---- suggested (11) --------------------------------------------------
 
 [JPNDIFGPCPN]
 name = "characterName"
 status = "suggested"
 anchor = "Monster_CollectionData/4"
-score = 34.0
+score = 329.0
 evidence = [
-  "characterName <- ui text: Monster_CollectionData.JPNDIFGPCPN shown in HeadMove/CharacterName, CUIAreaMapPoint/Text_LocalName, Img_Map/Party_Pin (34 records)",
+  "characterName <- ui text: Monster_CollectionData.JPNDIFGPCPN shown in HeadMove/CharacterName, CUIAreaMapPoint/Text_LocalName, Name_info/Text_Name (329 records)",
 ]
 
-[COBIGMMMLJP]
-name = "name"
+[LKDJJGPHLJO]
+name = "registrationProgress"
 status = "suggested"
-anchor = "AbilityType_v1/3"
-score = 22.0
+anchor = "AbilityOption/2"
+score = 45.0
 evidence = [
-  "conflict: evidence also suggests area, worldName",
-  "name <- ui text: Store.CLEHCECAGFF.COBIGMMMLJP shown in Total_InfoSlot/Text_Name (22 records)",
-  "worldName <- ui text: QuestMainData.FDBAILICFPC.COBIGMMMLJP shown in Btn_Field/Text_WorldName, GroupName_InfoSlot/Text_Area, DMG/Count_Text (15 records)",
-  "area <- ui text: QuestEpisodeData.FDBAILICFPC.COBIGMMMLJP shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, Btn_Castle/Text_WorldName (13 records)",
-  "worldName <- ui text: Map_Data.PHLMAFEGEKD.COBIGMMMLJP shown in Btn_Field/Text_WorldName, GroupName_InfoSlot/Text_Area, CUIAreaMapPoint/Text_LocalName (7 records)",
-  "worldName <- ui text: ObjectData.COBIGMMMLJP shown in Btn_Town/Text_WorldName, GroupName_InfoSlot/Text_Area (6 records)",
+  "registrationProgress <- ui values: AbilityOption.LKDJJGPHLJO holds all 90 values of Registration_Progress/Text_Value [UI_Stepup_AllSumRegistRate] (1576 distinct in column)",
 ]
 
-[COHICBKLBKH]
-name = "localName"
+[EIAGJCDKCEN]
+name = "synthesisTextName"
 status = "suggested"
-anchor = "Npc_Data/7"
-score = 17.0
+anchor = "Pet_Data/3"
+score = 33.0
 evidence = [
-  "localName <- ui text: Npc_Data.COHICBKLBKH shown in CUIAreaMapPoint/Text_LocalName, TopLabel/HUDLabel, Btn_ConquerorShop/Text_Name (17 records)",
-]
-
-[ENCPFFLCMBN]
-name = "name"
-status = "suggested"
-anchor = "NPC_Shop/2/0"
-score = 8.0
-evidence = [
-  "name <- ui text: NPC_Shop.ADMEDPMNAMP.ENCPFFLCMBN shown in Btn_EventChange/Text_Name, Btn_EquipmentShop/Text_Name, Btn_GuildShop/Text_Name (8 records)",
-]
-
-[DJFKLOPBKCP]
-name = "drop"
-status = "suggested"
-anchor = "AchieveCategory/2"
-score = 3.0
-evidence = [
-  "drop <- ui text: AchieveCategory.DJFKLOPBKCP shown in Tab_Drop/Text_Drop (3 records)",
-]
-
-[CJFLEJEPHKM]
-name = "localName"
-status = "suggested"
-anchor = "Map_Data/19"
-score = 3.0
-evidence = [
-  "localName <- ui: Map_Data.CJFLEJEPHKM <- CUIAreaMapPoint/Text_LocalName [ResetType_Week], 3 records, 100% precise, e.g. Map_Data[42] \"Underground Shrine B2\" -> \"Underground Shrine B2\"",
+  "synthesisTextName <- ui text: Pet_Data.EIAGJCDKCEN shown in TextName/SynthesisTextName, HeadMove/CharacterName, CUIAreaMapPoint/Text_LocalName (33 records)",
 ]
 
 [MLALGFLOAFN]
 name = "localName"
 status = "suggested"
 anchor = "Map_Data/12"
-score = 3.0
+score = 21.0
 evidence = [
-  "localName <- ui: Map_Data.MLALGFLOAFN <- CUIAreaMapPoint/Text_LocalName [ResetType_Week], 3 records, 100% precise, e.g. Map_Data[42] \"Underground Shrine B2\" -> \"Underground Shrine B2\"",
+  "localName <- ui: Map_Data.MLALGFLOAFN <- CUIAreaMapPoint/Text_LocalName [ResetType_Week, WorldMap_DetailInfo_NotItem], 34 records, 62% precise, e.g. Map_Data[42] \"Underground Shrine B2\" -> \"Underground Shrine B2\"",
 ]
 
-[EIAGJCDKCEN]
-name = "localName"
+[DKHIKJGILMK]
+name = "characterName"
 status = "suggested"
-anchor = "Pet_Data/3"
-score = 3.0
+anchor = "QuestEpisodeData/10/5"
+score = 18.0
 evidence = [
-  "localName <- ui text: Pet_Data.EIAGJCDKCEN shown in CUIAreaMapPoint/Text_LocalName, HeadMove/CharacterName (3 records)",
+  "characterName <- ui text: QuestMainData.HINLJAMGPPI.DKHIKJGILMK shown in HeadMove/CharacterName, Mask/Text_Info, DMG_5/Count_Text (18 records)",
 ]
 
-[NOHLEFCNDPA]
-name = "goods"
+[LKHJBJNDPBM]
+name = "skillName"
 status = "suggested"
-anchor = "ServerTransfer_Check/7"
-score = 3.0
+anchor = "Buff/7"
+score = 14.0
 evidence = [
-  "goods <- ui values: Warp_Data.JAAKNNEDJJM.NOHLEFCNDPA holds all 6 values of Cost/Text_Goods [ResetType_Week, WorldMap_UI_NowMove] (37 distinct in column)",
+  "skillName <- ui text: Buff.LKHJBJNDPBM shown in Views/Txt_SkillName, Slot/Text_Tittle, Skill_Slot/Text_SkillName (14 records)",
+]
+
+[OKKPOFCJDKP]
+name = "limitInfo2"
+status = "suggested"
+anchor = "Store/13/0"
+score = 11.0
+evidence = [
+  "limitInfo2 <- ui: Store.AJANFPMPJBN.OKKPOFCJDKP <- Limit_Info/Text_LimitInfo [Remain_UI_Reset_InitUntil, Store_UI_TermsDetail], 11 records, 100% precise, e.g. Store[501020045] \"Costume Package\" -> \"Daily Limit per Account\nby Server 0/2\"",
+]
+
+[GNIEIGKNAPO]
+name = "limitInfo2"
+status = "suggested"
+anchor = "Store/1"
+score = 11.0
+evidence = [
+  "limitInfo2 <- ui: Store.GNIEIGKNAPO <- Limit_Info/Text_LimitInfo [Remain_UI_Reset_InitUntil, Store_UI_TermsDetail], 11 records, 100% precise, e.g. Store[501020045] \"Costume Package\" -> \"Daily Limit per Account\nby Server 0/2\"",
+]
+
+[EKNOADHNCBJ]
+name = "goodsValue"
+status = "suggested"
+anchor = "Store/18/0"
+score = 9.0
+evidence = [
+  "goodsValue <- ui: Store.GPGOGAFJKMB[].EKNOADHNCBJ <- Goods_Body/Text_GoodsValue [Remain_UI_Reset_InitUntil], 9 records, 100% precise, e.g. Store[501020045] \"Costume Package\" -> \"100\"",
+]
+
+[CJFLEJEPHKM]
+name = "mapName"
+status = "suggested"
+anchor = "Map_Data/19"
+score = 3.2
+evidence = [
+  "conflict: evidence also suggests fXTextArea",
+  "mapName <- ui: Map_Data.CJFLEJEPHKM <- MapInfo/Map_Name, 4 records, 80% precise, e.g. Map_Data[40] \"Ancient Labyrinth B3\" -> \"Ancient Labyrinth B3\"",
+  "mapName <- ui: Map_Data.CJFLEJEPHKM <- BattleType/Text_MapName [BT_PRECAUSION], 4 records, 80% precise, e.g. Map_Data[40] \"Ancient Labyrinth B3\" -> \"Ancient Labyrinth B3\"",
+  "fXTextArea <- ui: Map_Data.CJFLEJEPHKM <- FX_Move/FX_Text_Area, 4 records, 80% precise, e.g. Map_Data[40] \"Ancient Labyrinth B3\" -> \"Ancient Labyrinth B3\"",
+]
+
+[GEDDELKHAMI]
+name = "teleportCount"
+status = "suggested"
+anchor = "Dealing_Reward/3"
+score = 2.5
+evidence = [
+  "teleportCount <- ui values: Pet_Data.GEDDELKHAMI holds all 5 values of Btn_Teleport/Text_TeleportCount (86 distinct in column)",
 ]

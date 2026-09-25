@@ -168,7 +168,8 @@ def run_uitrace(conf: cfg.Config, bundle: Bundle, files: list[str]) -> None:
     result = evidence.result()
     write_json(conf.evidence, result, indent=1)
     kinds = collections.Counter(c["kind"] for c in result["columns"])
-    print(f"{len(paths)} traces, {result['texts']} texts, {result['records']} records -> "
+    print(f"{len(paths)} traces, {result['texts']} texts, {result['records']} records, "
+          f"{result['states']} state snapshots -> "
           f"{dict(kinds)} findings -> {conf.evidence}")
     print("next: python3 -m datatables suggest")
 
