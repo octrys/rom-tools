@@ -15,6 +15,10 @@ The protocol schema comes from two inputs, merged here:
      statically from the metadata. The dump supplies `name:type` per field, which
      this tool merges onto the opcode catalog by class name.
 
+The decoder reads nested struct layouts (e.g. `List<Protocol.ComposeInputInfo>`)
+straight from the dump, so every type the messages reach is cross-checked against
+the metadata's field list; a stale dump shows up as a `nested type drift` note.
+
 Outputs (into the configured output dir):
   * `messages.json` / `messages.md`        — opcodes + ordered field names
   * `messages_typed.json` / `messages_typed.md` — the above + field types
@@ -30,10 +34,10 @@ re-run to remigrate.
 from __future__ import annotations
 
 import json
+import re
 import struct
 import sys
 import tomllib
-from collections import Counter
 from pathlib import Path
 
 # IL2CPP global-metadata.dat section order after the 8-byte {magic, version} head.
@@ -46,10 +50,27 @@ SECTIONS = [
     "genericContainers", "nestedTypes", "interfaces", "vtableMethods",
     "interfaceOffsets", "typeDefinitions",
 ]
+METADATA_MAGIC = 0xFAB11BAF
+METADATA_VERSION = 31       # the struct sizes/layouts below are only valid for v31
+HEADER_FMT = "<" + "I" * (2 + len(SECTIONS) * 2)
 TYPE_DEF_SIZE = 88          # sizeof(Il2CppTypeDefinition) for metadata v31
 FIELD_DEF_SIZE = 12         # sizeof(Il2CppFieldDefinition)
-# Il2CppTypeDefinition layout: 7×i32, 1×u32 (fieldStart), 8×i32, 8×u16, 2×u32.
+# Il2CppTypeDefinition layout: 7×i32, 1×u32 (flags), 8×i32 (fieldStart first),
+# 8×u16 (field_count third), 2×u32.
 TYPE_DEF_FMT = "<" + "i" * 7 + "I" + "i" * 8 + "H" * 8 + "II"
+# The zigzag decode of `__ID__` is only valid for Int32 constants; other widths
+# are stored differently in the default-value blob.
+OPCODE_TYPE = "System.Int32"
+# Type names inside a dump field type, e.g. `List<Protocol.X>` or `Protocol.X[]`.
+TYPE_NAME_PATTERN = re.compile(r"[A-Za-z_][\w.`]*")
+
+
+class MetadataError(ValueError):
+    """`global-metadata.dat` is not a format this reader understands."""
+
+
+class ProtocolError(ValueError):
+    """The extracted catalog is inconsistent and would misdecode frames."""
 
 
 def load_config(path: Path) -> dict:
@@ -72,7 +93,18 @@ class Metadata:
 
     def __init__(self, data: bytes) -> None:
         self.data = data
-        header = struct.unpack_from("<" + "I" * (2 + len(SECTIONS) * 2), data, 0)
+        if len(data) < struct.calcsize(HEADER_FMT):
+            raise MetadataError(f"file too small for a metadata header ({len(data)} bytes)")
+        header = struct.unpack_from(HEADER_FMT, data, 0)
+        magic, version = header[0], header[1]
+        if magic != METADATA_MAGIC:
+            raise MetadataError(
+                f"bad magic 0x{magic:08X} (expected 0x{METADATA_MAGIC:08X}); "
+                "file is encrypted or not global-metadata.dat")
+        if version != METADATA_VERSION:
+            raise MetadataError(
+                f"unsupported metadata version {version} (reader is built for "
+                f"v{METADATA_VERSION}; update SECTIONS and the struct layouts)")
         self.sections: dict[str, tuple[int, int]] = {}
         cursor = 2  # skip magic + version
         for name in SECTIONS:
@@ -116,7 +148,7 @@ class Metadata:
             return 0xFFFFFFFE
         if lead == 0xFF:
             return 0xFFFFFFFF
-        return lead
+        raise MetadataError(f"invalid compressed-uint lead byte 0x{lead:02X} at offset 0x{base:X}")
 
     def opcode_default(self, field_index: int) -> int | None:
         """The zigzag-decoded `__ID__` opcode for a field, if it has a default."""
@@ -130,6 +162,23 @@ class Metadata:
         offset, size = self.sections["typeDefinitions"]
         for index in range(size // TYPE_DEF_SIZE):
             yield struct.unpack_from(TYPE_DEF_FMT, self.data, offset + index * TYPE_DEF_SIZE)
+
+    def type_field_names(self) -> dict[str, list[str]]:
+        """Every type's declared field names in order (static included), by `Namespace.Name`.
+
+        A name defined in more than one assembly keeps its first definition.
+        """
+        names: dict[str, list[str]] = {}
+        for type_def in self.type_definitions():
+            name, namespace = self.string(type_def[0]), self.string(type_def[1])
+            full = f"{namespace}.{name}" if namespace else name
+            if full in names:
+                continue
+            field_start, field_count = type_def[8], type_def[18]
+            names[full] = [
+                self.string(self.field(field_start + offset)[0]) for offset in range(field_count)
+            ]
+        return names
 
 
 def extract_messages(meta: Metadata) -> list[dict]:
@@ -176,14 +225,28 @@ def extract_messages(meta: Metadata) -> list[dict]:
 # --- type merge -----------------------------------------------------------
 
 
+def check_unique_opcodes(messages: list[dict]) -> None:
+    """Fail if two messages share an opcode — the decoder indexes by opcode."""
+    names_by_opcode: dict[int, list[str]] = {}
+    for message in messages:
+        names_by_opcode.setdefault(message["id"], []).append(message["name"])
+    duplicates = {opcode: names for opcode, names in names_by_opcode.items() if len(names) > 1}
+    if duplicates:
+        listing = "; ".join(
+            f"0x{opcode:08X}: {', '.join(names)}" for opcode, names in sorted(duplicates.items())
+        )
+        raise ProtocolError(f"{len(duplicates)} duplicate opcode(s): {listing}")
+
+
+def qualified_name(message: dict) -> str:
+    """`Namespace.Name`, the key the runtime dump's `full` uses."""
+    return f"{message['ns']}.{message['name']}" if message["ns"] else message["name"]
+
+
 def load_dump_index(dump_path: Path) -> dict[str, dict]:
-    """Index the runtime dump by class name (bare and `Protocol.`-qualified)."""
+    """Index the runtime dump by namespace-qualified class name."""
     dump = json.loads(dump_path.read_text())
-    index: dict[str, dict] = {}
-    for entry in dump:
-        index[entry["name"]] = entry
-        index[entry.get("full", entry["name"])] = entry
-    return index
+    return {entry["full"]: entry for entry in dump}
 
 
 def merge_types(messages: list[dict], dump_index: dict[str, dict]) -> tuple[list[dict], dict]:
@@ -191,7 +254,7 @@ def merge_types(messages: list[dict], dump_index: dict[str, dict]) -> tuple[list
     typed: list[dict] = []
     stats = {"matched": 0, "no_type_source": 0, "field_mismatch": 0}
     for message in messages:
-        source = dump_index.get(message["name"]) or dump_index.get("Protocol." + message["name"])
+        source = dump_index.get(qualified_name(message))
         entry = {key: message[key] for key in ("name", "dir", "id", "id_hex")}
 
         if not source:
@@ -200,6 +263,13 @@ def merge_types(messages: list[dict], dump_index: dict[str, dict]) -> tuple[list
             stats["no_type_source"] += 1
             typed.append(entry)
             continue
+
+        opcode_type = next(
+            (field["type"] for field in source["fields"] if field["name"] == "__ID__"), None)
+        if opcode_type is not None and opcode_type != OPCODE_TYPE:
+            raise ProtocolError(
+                f"{message['name']}.__ID__ is {opcode_type}, not {OPCODE_TYPE}; "
+                f"its opcode {message['id_hex']} was decoded as a zigzag Int32 and is wrong")
 
         types_by_name = {
             field["name"]: field["type"]
@@ -222,18 +292,91 @@ def merge_types(messages: list[dict], dump_index: dict[str, dict]) -> tuple[list
     return typed, stats
 
 
+# --- nested type check ----------------------------------------------------
+
+
+def referenced_types(field_type: str) -> list[str]:
+    """Non-`System.` type names inside a field type, e.g. `List<Protocol.X>` -> [`Protocol.X`]."""
+    return [name for name in TYPE_NAME_PATTERN.findall(field_type) if not name.startswith("System.")]
+
+
+def reachable_types(field_types: list[str], dump_index: dict[str, dict]) -> set[str]:
+    """Every non-`System.` type the field types reach, following instance fields in the dump."""
+    seen: set[str] = set()
+    pending = [name for field_type in field_types for name in referenced_types(field_type)]
+    while pending:
+        name = pending.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        entry = dump_index.get(name)
+        if entry is None:
+            continue
+        pending.extend(
+            nested
+            for field in entry["fields"]
+            if not field.get("isStatic")
+            for nested in referenced_types(field["type"])
+        )
+    return seen
+
+
+def describe_field_drift(
+    type_name: str, meta_fields: dict[str, list[str]], dump_index: dict[str, dict]
+) -> str | None:
+    """How a type's metadata fields differ from the dump's, or None if they agree."""
+    meta_names = meta_fields.get(type_name)
+    entry = dump_index.get(type_name)
+    if meta_names is None:
+        return "not in metadata"
+    if entry is None:
+        return "not in runtime dump"
+    dump_names = [field["name"] for field in entry["fields"]]
+    if dump_names == meta_names:
+        return None
+    only_meta = [name for name in meta_names if name not in dump_names]
+    only_dump = [name for name in dump_names if name not in meta_names]
+    if not only_meta and not only_dump:
+        return "same fields in a different order"
+    return f"only in metadata: {only_meta or '-'}; only in dump: {only_dump or '-'}"
+
+
+def add_note(entry: dict, note: str) -> None:
+    entry["_note"] = f"{entry['_note']}; {note}" if "_note" in entry else note
+
+
+def check_nested_types(
+    typed: list[dict], dump_index: dict[str, dict], meta_fields: dict[str, list[str]]
+) -> dict[str, str | None]:
+    """Cross-check every nested type the messages reach against the metadata.
+
+    The decoder takes nested struct layouts straight from the dump, so a dump older
+    than the metadata would silently misdecode them. Messages reaching a drifted type
+    get a `_note` (in place). Returns each checked type -> drift description or None.
+    """
+    drift_by_type: dict[str, str | None] = {}
+    for entry in typed:
+        nested = reachable_types([field["type"] for field in entry["fields"]], dump_index)
+        drifted = []
+        for name in sorted(nested):
+            if name not in drift_by_type:
+                drift_by_type[name] = describe_field_drift(name, meta_fields, dump_index)
+            if drift_by_type[name] is not None:
+                drifted.append(name)
+        if drifted:
+            add_note(entry, f"nested type drift: {', '.join(drifted)}")
+    return drift_by_type
+
+
 # --- output ---------------------------------------------------------------
 
 
-def write_messages(messages: list[dict], out_dir: Path) -> dict:
+def write_messages(messages: list[dict], out_dir: Path) -> None:
     (out_dir / "messages.json").write_text(
         json.dumps(messages, ensure_ascii=False, indent=1), encoding="utf-8")
 
-    id_counts = Counter(message["id"] for message in messages)
-    duplicates = {opcode: count for opcode, count in id_counts.items() if count > 1}
-
     lines = [f"# ROM Golden Age — Network Protocol ({len(messages)} messages)\n"]
-    lines.append(f"Unique ids: {len(id_counts)} | duplicate ids: {len(duplicates)}\n")
+    lines.append("Opcodes are unique (checked at extraction).\n")
     for direction in ("C2S", "S2C", "?"):
         group = [m for m in messages if m["dir"] == direction]
         if not group:
@@ -243,7 +386,6 @@ def write_messages(messages: list[dict], out_dir: Path) -> dict:
             fields = ", ".join(message["fields"]) if message["fields"] else "(no fields)"
             lines.append(f"- **{message['id_hex']}** `{message['name']}` — {fields}")
     (out_dir / "messages.md").write_text("\n".join(lines), encoding="utf-8")
-    return {"unique_ids": len(id_counts), "duplicate_ids": len(duplicates)}
 
 
 def write_typed(typed: list[dict], out_dir: Path) -> None:
@@ -264,6 +406,13 @@ def write_typed(typed: list[dict], out_dir: Path) -> None:
 
 
 def main() -> None:
+    try:
+        run()
+    except (MetadataError, ProtocolError) as err:
+        sys.exit(f"error: {err}")
+
+
+def run() -> None:
     config_path = Path(__file__).resolve().parent / "extract_protocol.toml"
     config = load_config(config_path)
     base = config_path.parent
@@ -274,28 +423,39 @@ def main() -> None:
     out_dir = resolve_path(base, paths.get("output", "../resources/protocol"))
     if not metadata_path.is_file():
         sys.exit(f"metadata not found: {metadata_path}")
-    out_dir.mkdir(parents=True, exist_ok=True)
 
+    dump_path = resolve_path(base, dump_value) if dump_value else None
+    if dump_path is not None and not dump_path.is_file():
+        sys.exit(f"dump not found: {dump_path} (set [paths].dump = \"\" to skip typing)")
+
+    # Validate everything before writing, so a bad run never leaves a partial catalog.
     meta = Metadata(metadata_path.read_bytes())
     messages = extract_messages(meta)
-    id_stats = write_messages(messages, out_dir)
+    check_unique_opcodes(messages)
+    typed_result = None
+    if dump_path is not None:
+        dump_index = load_dump_index(dump_path)
+        typed, merge_stats = merge_types(messages, dump_index)
+        nested = check_nested_types(typed, dump_index, meta.type_field_names())
+        typed_result = typed, merge_stats, nested
 
+    out_dir.mkdir(parents=True, exist_ok=True)
+    write_messages(messages, out_dir)
     c2s = sum(1 for m in messages if m["dir"] == "C2S")
     s2c = sum(1 for m in messages if m["dir"] == "S2C")
-    print(f"messages with __ID__: {len(messages)} (C2S={c2s} S2C={s2c})")
-    print(f"unique ids={id_stats['unique_ids']} duplicate ids={id_stats['duplicate_ids']}")
+    print(f"messages with __ID__: {len(messages)} (C2S={c2s} S2C={s2c}), opcodes unique")
     print(f"-> {out_dir}/messages.json, messages.md")
 
-    if not dump_value:
+    if typed_result is None:
         print("dump not configured; skipping type merge (untyped catalog only)")
         return
-
-    dump_path = resolve_path(base, dump_value)
-    if not dump_path.is_file():
-        sys.exit(f"dump not found: {dump_path} (set [paths].dump = \"\" to skip typing)")
-    typed, merge_stats = merge_types(messages, load_dump_index(dump_path))
+    typed, merge_stats, nested = typed_result
     write_typed(typed, out_dir)
     print(f"type merge: {merge_stats}")
+    drifted = {name: drift for name, drift in nested.items() if drift is not None}
+    print(f"nested types: {len(nested)} checked, {len(drifted)} drifted from metadata")
+    for name, drift in sorted(drifted.items()):
+        print(f"  {name}: {drift}")
     print(f"-> {out_dir}/messages_typed.json, messages_typed.md")
 
 
