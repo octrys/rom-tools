@@ -27,6 +27,8 @@ class Config:
     bundle: Path
     dump_cs: Path
     runtime: Path
+    image: Path
+    slots: Path
     output: Path
     names: Path
     enum_names: bool
@@ -44,6 +46,10 @@ class Config:
     @property
     def evidence(self) -> Path:
         return self.output / "evidence.json"
+
+    @property
+    def xref(self) -> Path:
+        return self.output / "xref.json"
 
     @property
     def schema(self) -> Path:
@@ -76,6 +82,8 @@ def load(path: Path = DEFAULT_PATH) -> Config:
         bundle=resolve("bundle"),
         dump_cs=resolve("dump_cs"),
         runtime=resolve("runtime"),
+        image=resolve("image"),
+        slots=resolve("slots"),
         output=resolve("output"),
         names=resolve("names"),
         enum_names=decode.get("enum_names", False),

@@ -5,6 +5,8 @@
   decode   decode the bundle with the saved layouts -> tables/<Table>.json
   schema   annotated column schema (types, enums, fk, ...) -> schema.json
   uitrace  [TRACE ...] import UI traces, match them against the tables -> evidence.json
+  xref     where the game's code reads each column -> xref.json
+  xref     TABLE[.COLUMN] ...  report it per column (--asm: annotated disassembly)
   suggest  names.toml: re-key to this build, regenerate suggestions from the evidence
 """
 
@@ -174,19 +176,49 @@ def run_uitrace(conf: cfg.Config, bundle: Bundle, files: list[str]) -> None:
     print("next: python3 -m datatables suggest")
 
 
+def run_xref(conf: cfg.Config, targets: list[str], show_asm: bool, show_all: bool, limit: int) -> None:
+    from . import xref
+    from .code import Image, Model
+
+    dump = parse_dump(conf.dump_cs)
+    if not targets:
+        for path, what in ((conf.image, "image"), (conf.slots, "slots")):
+            if not path.is_file():
+                sys.exit(f"{what} not found: {path} (rom-frida: python spawn.py dump_code.js)")
+        t0 = time.monotonic()
+        result = xref.build(Model(conf.dump_cs), Image(conf.image, conf.slots), dump)
+        write_json(conf.xref, result)
+        read = sum(len(f) for f in result["fields"].values())
+        print(f"{result['methods']} methods -> {read} fields of {result['types']} table types read "
+              f"[{time.monotonic() - t0:.0f}s] -> {conf.xref}")
+        print("next: python3 -m datatables xref Map_Data  (report), or suggest")
+        return
+    data = load_json(conf.xref, "xref (run `python3 -m datatables xref` first)")
+    model = Model(conf.dump_cs)
+    image = Image(conf.image, conf.slots) if show_asm else None
+    for target in targets:
+        lines = xref.asm(model, image, dump, data, target, show_all, limit) if show_asm \
+            else xref.report(data, dump, model, target, show_all, limit)
+        print("\n".join(lines))
+
+
 def run_suggest(conf: cfg.Config, bundle: Bundle) -> None:
     dump = parse_dump(conf.dump_cs)
     layouts = load_json(conf.layouts, "layouts (run `python3 -m datatables infer` first)")
     evidence = load_json(conf.evidence, "evidence") if conf.evidence.is_file() else {}
     if not evidence:
         print(f"no {conf.evidence.name} yet (run uitrace): suggesting from row keys only")
-    entries, stats = names.suggest(dump, names.load(conf.names), evidence, decode_all(bundle, layouts))
+    code = load_json(conf.xref, "xref") if conf.xref.is_file() else {}
+    if not code:
+        print(f"no {conf.xref.name} yet (run xref): no code evidence")
+    entries, stats = names.suggest(dump, names.load(conf.names), evidence, decode_all(bundle, layouts), code)
     names.save(conf.names, entries)
     for old, new in stats["moved"]:
         print(f"re-keyed {old} -> {new} (new build)")
     for key in stats["stale"]:
         print(f"[!] {key} ({entries[key].name}): anchor no longer resolves — check it by hand")
-    print(f"{stats['confirmed']} confirmed, {stats['suggested']} suggested -> {conf.names}")
+    print(f"{stats['confirmed']} confirmed, {stats['tentative']} tentative, {stats['suggested']} suggested"
+          f" -> {conf.names}")
     top = sorted((e for e in entries.values() if e.status == "suggested"), key=lambda e: -e.score)
     for e in top[:25]:
         print(f"  {e.score:7.1f}  {e.name:24} {e.evidence[0][:110] if e.evidence else ''}")
@@ -208,14 +240,21 @@ def schema(conf: cfg.Config) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(prog="python3 -m datatables", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["infer", "verify", "decode", "schema", "uitrace", "suggest"])
+    ap.add_argument("command", choices=["infer", "verify", "decode", "schema", "uitrace", "xref", "suggest"])
     ap.add_argument("args", nargs="*", help="tables to limit infer/verify/decode to (default: all); "
-                                            "for uitrace, trace files to import first")
+                                            "for uitrace, trace files to import first; "
+                                            "for xref, TABLE[.COLUMN] to report (none: build xref.json)")
     ap.add_argument("--config", type=Path, default=cfg.DEFAULT_PATH)
+    ap.add_argument("--asm", action="store_true", help="xref: disassembly around the reads of TABLE.COLUMN")
+    ap.add_argument("--all", action="store_true", help="xref: include methods with obfuscated names")
+    ap.add_argument("--limit", type=int, default=8, help="xref: methods shown per column (default 8)")
     a = ap.parse_args()
     conf = cfg.load(a.config)
     if a.command == "schema":
         schema(conf)
+        return
+    if a.command == "xref":
+        run_xref(conf, a.args, a.asm, a.all, a.limit)
         return
     if not conf.bundle.is_file():
         sys.exit(f"bundle not found: {conf.bundle}")

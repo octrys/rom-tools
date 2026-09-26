@@ -13,8 +13,14 @@ dump_cs = "../../resources/rom_dump.cs"
 # change every build). Only `infer`, `verify` and `schema` read it.
 runtime = "../../resources/tables_runtime.json"
 
+# rom-frida's dump_code.js output — the unpacked GameAssembly image (by RVA) and
+# what each of its il2cpp metadata slots names. Only `xref` reads them; same
+# build as dump_cs.
+image = "../../resources/gameassembly.bin"
+slots = "../../resources/gameassembly_slots.json"
+
 # Everything the tool writes: layouts.json (infer), schema.json (schema),
-# tables/<Table>.json (decode), traces/ + evidence.json (uitrace).
+# tables/<Table>.json (decode), traces/ + evidence.json (uitrace), xref.json (xref).
 output = "../../resources/datatables"
 
 # Readable names for obfuscated identifiers — curated, committed (see names.py).
@@ -26,8 +32,8 @@ names = "names.toml"
 enum_names = true
 
 # Rename obfuscated fields from names.toml: "confirmed" entries only, "all"
-# (suggestions too), or "none".
-names = "confirmed"
+# (tentative and suggested too), or "none".
+names = "all"
 
 [infer]
 sample_rows = 24          # rows searched at once (more = fewer false layouts, slower)

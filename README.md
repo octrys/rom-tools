@@ -78,9 +78,12 @@ UnityPy.
 cd client && uv run --with 'UnityPy>=1.25' python3 -m datatables decode
 ```
 
-**Field names** — obfuscated field names are recovered from the UI: rom-frida's
-`trace_ui_text.js` records what the game displays, `datatables uitrace`
-matches every trace against the decoded tables, and `datatables suggest`
+**Field names** — obfuscated field names are recovered from the UI and from
+the game's code: rom-frida's `trace_ui_text.js` records what the game
+displays and `datatables uitrace` matches every trace against the decoded
+tables; rom-frida's `dump_code.js` dumps the unpacked game code and
+`datatables xref` finds where each column is read (plaintext getters like
+`CMapManager.get_IsNotPet` name a field outright). `datatables suggest`
 writes one entry per obfuscated identifier to
 [`datatables/names.toml`](client/datatables/names.toml). Each entry has a
 `status`:
@@ -90,18 +93,23 @@ writes one entry per obfuscated identifier to
 - `confirmed` — reviewed by hand (edit the name, set `status = "confirmed"`).
   The tool never changes these, except to re-key them to a new build's
   obfuscated name.
+- `tentative` — a hand-written guess from data patterns (value ranges,
+  foreign keys), with no proof yet. Kept like confirmed entries, but applied
+  only with `names = "all"`.
 
 `[decode].names` in `datatables.toml` picks what `decode` applies:
 
 | Value | Applied |
 |---|---|
-| `confirmed` | confirmed entries only: field names change only when someone approves one (the default, and the current setting) |
-| `all` | confirmed and suggested: more fields named, but a suggestion can rename a field between runs |
+| `confirmed` | confirmed entries only: field names change only when someone approves one (the default) |
+| `all` | confirmed, tentative and suggested: more fields named, but a suggestion can rename a field between runs (the current setting) |
 | `none` | nothing: every field keeps its obfuscated name |
 
 ```bash
 cd client
 uv run --with 'UnityPy>=1.25' python3 -m datatables uitrace /mnt/c/.../rom-frida/storage/ui_trace_*.jsonl
+uv run --with capstone python3 -m datatables xref            # code xrefs -> xref.json
+uv run --with capstone python3 -m datatables xref Map_Data   # per-column report
 uv run --with 'UnityPy>=1.25' python3 -m datatables suggest
 ```
 
@@ -153,7 +161,8 @@ resources/               local, git-ignored inputs/outputs (leaked client data)
 resources/rom_dump.cs    il2cpp dump (rom-frida) — type model for datatables
 resources/rom_dump.json  il2cpp type dump (rom-frida) — field types for exporters/extract_protocol.py
 resources/tables_runtime.json  runtime table dump (rom-frida) — ground truth for datatables infer/verify
-resources/datatables/    datatables output: layouts.json, schema.json, evidence.json, traces/, tables/<Table>.json
+resources/gameassembly.bin, gameassembly_slots.json  unpacked game code + metadata slots (rom-frida) — for datatables xref
+resources/datatables/    datatables output: layouts.json, schema.json, evidence.json, xref.json, traces/, tables/<Table>.json
 resources/client/        full client install (GameAssembly.dll, ROMGoldenAge_Data)
 resources/launcher/      launcher configs (encrypted + decrypted)
 tmp/                     scratch for bulk patch downloads (git-ignored)

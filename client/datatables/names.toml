@@ -1,10 +1,11 @@
 # Readable names for obfuscated identifiers — see datatables/names.py.
 # `python -m datatables suggest` re-keys entries to the current build (via
 # `anchor`) and regenerates the "suggested" ones from the evidence; entries
-# with status = "confirmed" are never changed. To accept a suggestion, fix its
-# name if needed and set status = "confirmed".
+# with status = "confirmed" or "tentative" (a hand-written guess, applied only
+# with names = "all") are never changed. To accept a suggestion, fix its name
+# if needed and set status = "confirmed".
 
-# ---- confirmed (37) --------------------------------------------------
+# ---- confirmed (70) --------------------------------------------------
 
 [MHDNDMFDPGD]
 name = "achieveCategoryIndex"
@@ -12,6 +13,16 @@ status = "confirmed"
 anchor = "AchieveCategory/0"
 evidence = [
   "achieveCategoryIndex <- row key of AchieveCategory",
+]
+
+[PFDFPIALIBB]
+name = "alignment"
+status = "confirmed"
+anchor = "Map_Data/13/5"
+evidence = [
+  "type: enum JOMLNJBBGOI = PA_None/LAW_ABIDING/ORDERLY/NORMAL/CHAOS/DECIMATOR (player alignment)",
+  "code: read in EEHEAKKEBLC::EJEMAEEHLDJ with CNetData::get_MyPlayer; strings msg_cannot_use_class/level/alignment (entry restriction check)",
+  "weak: single reader and PA_None in every Map_Data row; sibling FPEPBPMNGGH (same enum, no readers) left unnamed",
 ]
 
 [NOHLEFCNDPA]
@@ -31,6 +42,42 @@ status = "confirmed"
 anchor = "AuctionLevel/0"
 evidence = [
   "auctionLevelIndex <- row key of AuctionLevel",
+]
+
+[PDOKLFOPDIN]
+name = "batch"
+status = "confirmed"
+anchor = "Map_Data/6"
+evidence = [
+  "struct {name, bundle}: the map's batch scene ('<scene>_Batch' in every row)",
+  "code: read in CSceneLoadManager::SendSceneLoad, CUIDungeonSlot::Refresh",
+]
+
+[GENDBGDEGLL]
+name = "battlePower"
+status = "confirmed"
+anchor = "Map_Data/13/3"
+evidence = [
+  "code: limit.GENDBGDEGLL read in CUIWorldMissionMapInfoPopupSlot::CheckUseSlot with 'UI_DarkRealm_NoEntry_BattlePower', and in CheckActiveLimit next to levelMin/levelMax",
+  "also in recommend {levelMin, levelMax, battlePower}",
+]
+
+[MLALGFLOAFN]
+name = "battleType"
+status = "confirmed"
+anchor = "Map_Data/12"
+evidence = [
+  "type: enum CMHLLFGEIHL = BT_NONE/SAFTY/PRECAUSION/DISPUTE/EXCEPTION/VILLAGE",
+  "code: EONGMLLJMOC.GDLCJGCDODK.MLALGFLOAFN read in CMapManager::GetCellBattleType, CMapManager::GetLastCellBattleType",
+  "rejected 'localName': numeric UI match of value 2 (BT_PRECAUSION) against the '2' in map names (B2, 2F), e.g. Map_Data[42] \"Underground Shrine B2\"",
+]
+
+[KGCCDLKLPKA]
+name = "bundle"
+status = "confirmed"
+anchor = "Map_Data/5/1"
+evidence = [
+  "code: PHLMAFEGEKD.KGCCDLKLPKA / PDOKLFOPDIN.KGCCDLKLPKA read in CSceneLoadManager.HAELHOIEPGC::MoveNext and loaded as an asset bundle (AIEHDMLCMDH::LMEMGAFJHIP)",
 ]
 
 [HJAMOMKKHFP]
@@ -57,6 +104,22 @@ evidence = [
   "costumeComposeIndex <- row key of Costume_Compose, Pet_Compose",
 ]
 
+[AIFKHKAINEE]
+name = "dataBundle"
+status = "confirmed"
+anchor = "Map_Data/5/2"
+evidence = [
+  "code: PHLMAFEGEKD.AIFKHKAINEE read in CSceneLoadManager.HAELHOIEPGC::MoveNext next to bundle, loaded the same way (the scene's data bundle)",
+]
+
+[ECABBNMLAKG]
+name = "dominionNumber"
+status = "confirmed"
+anchor = "Map_Data/27"
+evidence = [
+  "code: read in CUIDominionWindow_ItemInfo::UpdateItemInfo ('[영지전] MapIndex : {0}', '{0}. {1}') and CUIDominion_MapName::Awake ('{0}. {1}'): the number before a dominion map's name",
+]
+
 [EDPFMKAIECB]
 name = "enchantItemTypeIndex"
 status = "confirmed"
@@ -79,6 +142,14 @@ status = "confirmed"
 anchor = "Event/0"
 evidence = [
   "eventIndex <- row key of Event",
+]
+
+[LMANMMHKJDF]
+name = "floorName"
+status = "confirmed"
+anchor = "Map_Data/20"
+evidence = [
+  "values 'B1'..'B4', '1F', 'Entry', ... (dungeon floors); code: read in CUIDungeonSlot::Refresh, CUIDungeonSlot::SetData",
 ]
 
 [CHKAOCAFHFJ]
@@ -107,6 +178,95 @@ anchor = "AbilityOption/0"
 evidence = [
   "index <- row key in 95 tables",
   "itemCountText <- ui: Store_Hot.DNIEOGFIAHC <- Views/ItemCount_Text [Awakening_SET_FIVE, PC_MAGICIAN, SK_BUFF, SK_DEBUFF], 5 records, 83% precise, e.g. Store_Hot[6] read -> \"+6\"",
+]
+
+[PNKPHKMFKDJ]
+name = "isCrossWorld"
+status = "confirmed"
+anchor = "Map_Data/11"
+evidence = [
+  "isCrossWorld <- code: EONGMLLJMOC.GDLCJGCDODK.PNKPHKMFKDJ is returned by CMapManager::get_IsCrossWorld",
+  "code: EONGMLLJMOC.GDLCJGCDODK.PNKPHKMFKDJ read in CMapManager::OnS2C_MapEnterComplete -> CNetData::get_Chatting, CNetData.CDLGKEAALJD::OHDDABKMACB, MonoSingleton<CUIManager>::get_s_Instance",
+]
+
+[NKKOMFNJNHD]
+name = "isMazeMap"
+status = "confirmed"
+anchor = "Map_Data/8"
+evidence = [
+  "isMazeMap <- code: EONGMLLJMOC.GDLCJGCDODK.NKKOMFNJNHD is returned by CMapManager::get_IsMazeMap",
+]
+
+[AOHIOIEJFIP]
+name = "isNotChat"
+status = "confirmed"
+anchor = "Map_Data/23/9"
+evidence = [
+  "isNotChat <- code: EONGMLLJMOC.FDGJPJADJBB.AOHIOIEJFIP is returned by CMapManager::get_IsNotChat",
+]
+
+[PPAODNNILFC]
+name = "isNotParty"
+status = "confirmed"
+anchor = "Map_Data/23/8"
+evidence = [
+  "isNotParty <- code: EONGMLLJMOC.FDGJPJADJBB.PPAODNNILFC is returned by CMapManager::get_IsNotParty",
+]
+
+[DOABJLPJNLA]
+name = "isNotPet"
+status = "confirmed"
+anchor = "Map_Data/23/2"
+evidence = [
+  "isNotPet <- code: EONGMLLJMOC.FDGJPJADJBB.DOABJLPJNLA is returned by CMapManager::get_IsNotPet",
+]
+
+[GOJFDAFLEHF]
+name = "isNotPlayerInfo"
+status = "confirmed"
+anchor = "Map_Data/23/0"
+evidence = [
+  "code: restriction.GOJFDAFLEHF read in CUIPKRecordRevengePopup::UpdateUI, CUIPKRecordKillInfoPopup::UpdateUI with 'UI_PVPRecord_UnkownPlayer' (the killer's name hidden on these maps)",
+]
+
+[KPPGKIINKKE]
+name = "isNotPotion"
+status = "confirmed"
+anchor = "Map_Data/23/7"
+evidence = [
+  "isNotPotion <- code: EONGMLLJMOC.FDGJPJADJBB.KPPGKIINKKE is returned by CMapManager::get_IsNotPotion",
+]
+
+[IFCNMOACMCE]
+name = "isNotRankEff"
+status = "confirmed"
+anchor = "Map_Data/23/4"
+evidence = [
+  "isNotRankEff <- code: EONGMLLJMOC.FDGJPJADJBB.IFCNMOACMCE is returned by CMapManager::get_IsNotRankEff",
+]
+
+[PKHGMDJMBJC]
+name = "isNotResource"
+status = "confirmed"
+anchor = "Map_Data/23/1"
+evidence = [
+  "isNotResource <- code: EONGMLLJMOC.FDGJPJADJBB.PKHGMDJMBJC is returned by CMapManager::get_IsNotResource",
+]
+
+[IOBAOHNNPDH]
+name = "isNotTeleport"
+status = "confirmed"
+anchor = "Map_Data/23/5"
+evidence = [
+  "isNotTeleport <- code: EONGMLLJMOC.FDGJPJADJBB.IOBAOHNNPDH is returned by CMapManager::get_IsNotTeleport",
+]
+
+[BDIJAMPBKGO]
+name = "isNotWarp"
+status = "confirmed"
+anchor = "Map_Data/23/6"
+evidence = [
+  "isNotWarp <- code: EONGMLLJMOC.FDGJPJADJBB.BDIJAMPBKGO is returned by CMapManager::get_IsNotWarp",
 ]
 
 [CBODILNOCOD]
@@ -144,12 +304,48 @@ evidence = [
   "worldLevelMin <- ui: Map_Data.BAEHJKGLEPM.AIBAPEMMMEO <- Btn_Town/Text_WorldLevel, 41 records, 100% precise, e.g. Map_Data[36] \"34. Darkville\" -> \"(Lv 79~80)\"",
 ]
 
+[AECKPHOEHHL]
+name = "limit"
+status = "confirmed"
+anchor = "Map_Data/13"
+evidence = [
+  "struct of entry requirements: levelMin/levelMax, battlePower, needMainQuest, needEpisodeQuest, limitGroup",
+  "code: read in CUIDungeonFloorInfoPopup::CheckActiveLimit, CUIColosseumPopup::CheckActiveLimit, CUIWorldMissionMapInfoPopupSlot::CheckUseSlot (strings UI_DarkRealm_NoEntry_Level/BattlePower/Quest)",
+]
+
+[JOLBIJIOLCH]
+name = "limitGroup"
+status = "confirmed"
+anchor = "Map_Data/13/9"
+evidence = [
+  "values are Map_Time keys (the time-limited dungeon group)",
+  "limitGroup <- code: EONGMLLJMOC.LDIKIHNANNP.JOLBIJIOLCH is returned by CMapManager::get_LimitGroup",
+  "code: EONGMLLJMOC.LDIKIHNANNP.JOLBIJIOLCH read in CUIDungeonChargeTimePopup::InitPopup, strings ['Dungeon_ChargeTime_PopUpDes', 'UI_Remain_TimeOut'] -> EONGMLLJMOC.KGCGOOOMCCB<System.Int32,EONGMLLJMOC.GMOFJLNEOJP>::BACBGAJAOIJ, MonoSingleton<CNetData>::get_HasInstance, MonoSingleton<CNetData>::get_s_Instance",
+  "code: EONGMLLJMOC.LDIKIHNANNP.JOLBIJIOLCH read in CUIDungeonFloorInfoPopup::RefreshRemainTime, strings ['Dungeon_Maptime_None', '</color>', '<color=red>'] -> EONGMLLJMOC.KGCGOOOMCCB<System.Int32,EONGMLLJMOC.GMOFJLNEOJP>::BACBGAJAOIJ, MonoSingleton<CNetData>::get_HasInstance, MonoSingleton<CNetData>::get_s_Instance",
+]
+
+[PHMJCGIHDHN]
+name = "loadingImage"
+status = "confirmed"
+anchor = "Map_Data/3"
+evidence = [
+  "code: EONGMLLJMOC.GDLCJGCDODK.PHMJCGIHDHN read in CLoading::SetBackgroundImg, strings ['UITexture/Loading/{0}', 'UI_Scene_Loding_00'] -> UnityEngine.UI.Image::set_sprite",
+]
+
 [DOAHGHCIODO]
 name = "makeCategoryIndex"
 status = "confirmed"
 anchor = "Make_Category/0"
 evidence = [
   "makeCategoryIndex <- row key of Make_Category",
+]
+
+[EFCOHNILIJL]
+name = "mapBuffs"
+status = "confirmed"
+anchor = "Map_Data/22"
+evidence = [
+  "List<int> of Buff keys; code: read in CUIWorldMapMapSkillBuffInfo::InitMapSKillBuff",
 ]
 
 [OPONJFMEBMC]
@@ -180,6 +376,33 @@ evidence = [
   "the map's cell grids (m_listHeightMap, m_listCellInfo, m_listZoneData, ...) hold exactly x*y cells: 1 cell per world unit",
   "GetCellIndex(x, z) = floor(z) * width + floor(x)",
   "all 677 maps are square: which field is x can't be told from values; width/height follows declaration order",
+]
+
+[DFEAOLIBMLI]
+name = "mapSkill"
+status = "confirmed"
+anchor = "Map_Data/21"
+evidence = [
+  "code: read in CMapManager::OnS2C_MapEnterComplete -> CUIQuickSlotManager::SetMapSkill, and CUIWorldMapMapSkillBuffInfo::InitMapSKillBuff; values are Buff keys",
+]
+
+[FGNGEPEHCGC]
+name = "mapType"
+status = "confirmed"
+anchor = "Map_Data/1"
+evidence = [
+  "mapType <- code: EONGMLLJMOC.GDLCJGCDODK.FGNGEPEHCGC is returned by CMapManager::get_MapType",
+  "code: EONGMLLJMOC.GDLCJGCDODK.FGNGEPEHCGC read in CMapManager::OnS2C_MapEnterComplete -> DLFOOBFGMHG::NBHFIJMDHBO, DLFOOBFGMHG::DAGLOHJKLKH, CNetData::get_Guild",
+  "code: EONGMLLJMOC.GDLCJGCDODK.FGNGEPEHCGC read in CUIDungeonFloorInfoPopup::OpenFloorInfoPopup, strings ['Stronghold_Enter', 'UI_Dungeon_Conquest_MoveToEntry'] -> System.Enum::Equals, UnityEngine.Component::get_gameObject, UnityEngine.GameObject::SetActive",
+]
+
+[LONEOBBMLGO]
+name = "minimap"
+status = "confirmed"
+anchor = "Map_Data/7"
+evidence = [
+  "Map_Data string: minimap sprite name ('Minimap_E4_Dragon_Harbor'); code: read in CUIMinimap::SetMapChange -> BGDILIPHLBO::NNMKHALPKGA, UnityEngine.UI.Image::set_sprite",
+  "Map_Data.BGFKBLOBABJ bool: minimap disabled for the map (readers check it with msg_cannot_use_map_warp)",
 ]
 
 [BKJFHEKKOFL]
@@ -215,6 +438,24 @@ evidence = [
   "area <- ui text: QuestEpisodeData.FDBAILICFPC.COBIGMMMLJP shown in GroupName_InfoSlot/Text_Area, Btn_Castle/Text_WorldName, Btn_Field/Text_WorldName (91 records)",
   "area <- ui text: QuestMainData.FDBAILICFPC.COBIGMMMLJP shown in GroupName_InfoSlot/Text_Area, Btn_Field/Text_WorldName, Top/Tittle_Text (86 records)",
   "name <- ui text: Store.CLEHCECAGFF.COBIGMMMLJP shown in Total_InfoSlot/Text_Name, Slot/Text_Item_Name, Store_TypeASlot/Text_ProductName (67 records)",
+]
+
+[JPNJDACFIKE]
+name = "needEpisodeQuest"
+status = "confirmed"
+anchor = "Map_Data/13/8"
+evidence = [
+  "code: compared with CQuestManager::GetQusetIndex(7) (episode quest) in CUIWorldMissionMapInfoPopupSlot::CheckUseSlot, string 'UI_DarkRealm_NoEntry_Quest'",
+  "values are QuestEpisodeData keys",
+]
+
+[AFLAGKOIKBB]
+name = "needMainQuest"
+status = "confirmed"
+anchor = "Map_Data/13/7"
+evidence = [
+  "code: compared with CQuestManager::GetQusetIndex(1) (main quest) in CUIWorldMissionMapInfoPopupSlot::CheckUseSlot, string 'UI_DarkRealm_NoEntry_Quest'",
+  "values are QuestMainData keys (e.g. 1414115)",
 ]
 
 [JJONJBHFIIM]
@@ -267,12 +508,37 @@ evidence = [
   "questGuildBoxIndex <- row key of QuestGuild_Box",
 ]
 
+[CLOPMCNENLL]
+name = "randomTime"
+status = "confirmed"
+anchor = "Map_Data/25"
+evidence = [
+  "code: read in CUIMapTime::OpenRandomTime, string 'UI_RandomTime'; 0 in 675 rows, 900 in 2",
+]
+
 [FMJNGPHOCKG]
 name = "realmEditIndex"
 status = "confirmed"
 anchor = "Realm_Edit/0"
 evidence = [
   "realmEditIndex <- row key of Realm_Edit",
+]
+
+[BAEHJKGLEPM]
+name = "recommend"
+status = "confirmed"
+anchor = "Map_Data/14"
+evidence = [
+  "struct {levelMin, levelMax, battlePower}: the recommended level shown on the world map",
+  "code: read in CUIWorldMapPoint::Init, strings ['<color={0}>(Lv {1}~{2})</color>'], and CUIDungeonSlot::Refresh",
+]
+
+[JIOKCFBKEMN]
+name = "restriction"
+status = "confirmed"
+anchor = "Map_Data/23"
+evidence = [
+  "struct of bool flags read by CMapManager::get_IsNotParty/IsNotChat/IsNotPet/IsNotPotion/IsNotTeleport/IsNotWarp/IsNotResource/IsNotRankEff",
 ]
 
 [FKGIKFCOPCC]
@@ -291,12 +557,30 @@ evidence = [
   "runeLineCntIndex <- row key of Rune_Line_Cnt, Rune_Line_Color",
 ]
 
+[PHLMAFEGEKD]
+name = "scene"
+status = "confirmed"
+anchor = "Map_Data/5"
+evidence = [
+  "struct {name, bundle, dataBundle}: the map's Unity scene",
+  "code: read in CSceneLoadManager::SendSceneLoad (name) and CSceneLoadManager.HAELHOIEPGC::MoveNext (bundles, loaded via AIEHDMLCMDH::LMEMGAFJHIP)",
+  "bundle paths are filled in at load time: the table holds only the name",
+]
+
 [CHLMMMIHNIN]
 name = "siegeWarfareMecenaryIndex"
 status = "confirmed"
 anchor = "SiegeWarfare_Mecenary/0"
 evidence = [
   "siegeWarfareMecenaryIndex <- row key of SiegeWarfare_Mecenary",
+]
+
+[KKDHNOHAHLB]
+name = "territoryIndex"
+status = "confirmed"
+anchor = "Map_Data/18"
+evidence = [
+  "code: read in CUIWorldMapWindow::MoveMap, CUIWorldMapPoint::Init; values 0-7, same set in WorldMap",
 ]
 
 [PPABCBFBBIN]
@@ -327,7 +611,61 @@ evidence = [
   "all 677 maps are square: which field is x can't be told from values; width/height follows declaration order",
 ]
 
-# ---- suggested (11) --------------------------------------------------
+# ---- tentative (6) --------------------------------------------------
+
+[CAIEKGMKOJM]
+name = "capacity"
+status = "tentative"
+anchor = "Map_Data/9"
+evidence = [
+  "no reads in the client (server-side); values 1 (422 rows), 50, 100..350: fits a player cap per map/channel",
+]
+
+[CJFLEJEPHKM]
+name = "dungeonGroup"
+status = "tentative"
+anchor = "Map_Data/19"
+evidence = [
+  "no reads that name it; 0 in 523 rows, else the key of the group's first map (Phantom Ruins 1101, 1104, 1107... -> 1101)",
+  "rejected 'mapName': a 4-record UI match (80%) on the map name; the column is an int group id",
+  "code: EONGMLLJMOC.BJLOOPLKODC.CJFLEJEPHKM read in CUIWorldMapPoint::Init -> System.Collections.Generic.List<FMMMEMCIFJF.PGEMBBMFJAD.NEHIMBPCOJP>::get_Item, System.Nullable<EONGMLLJMOC.BJLOOPLKODC>::get_Value, System.Collections.Generic.List<EONGMLLJMOC.BJLOOPLKODC>::Add",
+]
+
+[MAOMIFKIPEC]
+name = "isGuildWar"
+status = "tentative"
+anchor = "Map_Data/10"
+evidence = [
+  "no reads in the client; 1 in 20 rows, which are the guild-war maps",
+]
+
+[ENDAJNKNHEE]
+name = "revivePositions"
+status = "tentative"
+anchor = "Map_Data/17"
+evidence = [
+  "struct of 3 position ids (same pattern as startPosition), usually all equal; read by obfuscated methods only",
+]
+
+[BBLGBHPKIPI]
+name = "startPosition"
+status = "tentative"
+anchor = "MapData_StrongholdWar/7"
+evidence = [
+  "no reads in the client; Map_Data: a position id per map (627 distinct, e.g. 530153000)",
+  "MapData_StrongholdWar holds a struct of position ids under the same identifier",
+]
+
+[GIAMEMPIBOP]
+name = "territoryMapIndex"
+status = "tentative"
+anchor = "MapData_StrongholdWar/8"
+evidence = [
+  "code: read in CUIWorldMapList::GetRealmTerritoryIndex; 0 in 667 rows, 1-32 in 10",
+  "doubt: in MapData_StrongholdWar the same identifier is a struct (all zeros)",
+]
+
+# ---- suggested (17) --------------------------------------------------
 
 [JPNDIFGPCPN]
 name = "characterName"
@@ -336,6 +674,8 @@ anchor = "Monster_CollectionData/4"
 score = 329.0
 evidence = [
   "characterName <- ui text: Monster_CollectionData.JPNDIFGPCPN shown in HeadMove/CharacterName, CUIAreaMapPoint/Text_LocalName, Name_info/Text_Name (329 records)",
+  "code: EONGMLLJMOC.GJBBLIFAJGK.JPNDIFGPCPN read in CUIMonsterCollectionMenuBottom::SetItem, strings ['UI_HUD_Main_MonLock2', 'UI_HUD_Main_MonLock1', 'UI/GUI/HUD/Main'] -> UIButton::set_Disabled, BGDILIPHLBO::GLBLMPODOBD, UnityEngine.UI.Image::set_sprite",
+  "code: EONGMLLJMOC.GJBBLIFAJGK.JPNDIFGPCPN read in CUIMonsterCollectionMenuBottom::OnClickAcution -> MonoSingleton<CUIManager>::get_s_Instance, CUIManager::GetWindow, UnityEngine.Object::op_Equality",
 ]
 
 [LKDJJGPHLJO]
@@ -347,6 +687,86 @@ evidence = [
   "registrationProgress <- ui values: AbilityOption.LKDJJGPHLJO holds all 90 values of Registration_Progress/Text_Value [UI_Stepup_AllSumRegistRate] (1576 distinct in column)",
 ]
 
+[LJCCFNFPIHB]
+name = "monsterType"
+status = "suggested"
+anchor = "AbilityOption/4"
+score = 40.0
+evidence = [
+  "monsterType <- code: EONGMLLJMOC.FHDAJPONACE.LJCCFNFPIHB is returned by CActorMonster::get_MonsterType",
+  "code: EONGMLLJMOC.BKANJLGGHDD.LJCCFNFPIHB read in CUIEnchant_OneInfo::UpdateEnchantAfterStep -> CUIEnchant_OneInfo.AIFCABOJNPA::LBLIBEHMABF, System.Collections.Generic.List<EONGMLLJMOC.NAJCOLFMDMK>::FindIndex, CAppleSignIn::Awake",
+  "code: EONGMLLJMOC.BKANJLGGHDD.LJCCFNFPIHB read in CUItemCollectionRegistrationSlot::InitData, strings ['ItemInfo_Item_Count', '{0} {1}'] -> PFPOAJHIBLJ::IIEEEAPADKI, System.Int32::ToString, System.String::Format",
+]
+
+[BMMBAADNAPI]
+name = "monsterKind"
+status = "suggested"
+anchor = "Monster_Data_v1/2"
+score = 40.0
+evidence = [
+  "monsterKind <- code: EONGMLLJMOC.FHDAJPONACE.BMMBAADNAPI is returned by CActorMonster::get_MonsterKind",
+  "code: EONGMLLJMOC.FHDAJPONACE.BMMBAADNAPI read in CUITowerMainViewMapInfo_MonsterSlot::SetData, strings ['Lv {0} {1}', 'Monster_Grade_{0}', 'Monster_Kind_{0}'] -> System.String::Format, PFPOAJHIBLJ::IIEEEAPADKI, System.String::Concat",
+  "code: EONGMLLJMOC.FHDAJPONACE.BMMBAADNAPI read in CUIWorldMapDetailTotalSlot::SetDetailInfoMonster, strings ['Monster_Grade_{0}', 'Monster_Kind_{0}', ' / '] -> System.String::Format, PFPOAJHIBLJ::IIEEEAPADKI, System.String::Concat",
+]
+
+[OIOOAEIFPBD]
+name = "monsterAttackFirst"
+status = "suggested"
+anchor = "ActionNPC_Data_v2/16"
+score = 40.0
+evidence = [
+  "monsterAttackFirst <- code: EONGMLLJMOC.FHDAJPONACE.OIOOAEIFPBD is returned by CActorMonster::get_MonsterAttackFirst",
+]
+
+[EPEBFKJCFKO]
+name = "isObjectMoveing"
+status = "suggested"
+anchor = "ActionNPC_Data_v2/14"
+score = 40.0
+evidence = [
+  "isObjectMoveing <- code: EONGMLLJMOC.FHDAJPONACE.EPEBFKJCFKO is returned by CActorMonster::IsObjectMoveing",
+  "isObjectMoveing <- code: EONGMLLJMOC.BFOJNMONLME.EPEBFKJCFKO is returned by CActorNpcAction::IsObjectMoveing",
+]
+
+[EALNKOGBPFM]
+name = "isObjectRotation"
+status = "suggested"
+anchor = "ActionNPC_Data_v2/15"
+score = 40.0
+evidence = [
+  "isObjectRotation <- code: EONGMLLJMOC.FHDAJPONACE.EALNKOGBPFM is returned by CActorMonster::IsObjectRotation",
+  "isObjectRotation <- code: EONGMLLJMOC.BFOJNMONLME.EALNKOGBPFM is returned by CActorNpcAction::IsObjectRotation",
+]
+
+[MGLEAIMLLEP]
+name = "isObjectRotation"
+status = "suggested"
+anchor = "Npc_Data/11"
+score = 40.0
+evidence = [
+  "isObjectRotation <- code: EONGMLLJMOC.KFAJLFPPMAO.FNFFOJAMFMH.MGLEAIMLLEP is returned by CActorNPC::IsObjectRotation",
+]
+
+[MIHILPNJMOG]
+name = "team"
+status = "suggested"
+anchor = "ActionNPC_Data_v2/21"
+score = 40.0
+evidence = [
+  "team <- code: EONGMLLJMOC.PEGEJDJCDMH.KFDLKKALFNG.MIHILPNJMOG is returned by CMapObjectBase::get_Team",
+  "team <- code: EONGMLLJMOC.BFOJNMONLME.MIHILPNJMOG is returned by CActorNpcAction::get_Team",
+]
+
+[OMNENJEOEDC]
+name = "jobName"
+status = "suggested"
+anchor = "ActionNPC_Data_v2/4"
+score = 40.0
+evidence = [
+  "jobName <- code: EONGMLLJMOC.BFOJNMONLME.OMNENJEOEDC is returned by CActorNpcAction::GetJobName",
+  "code: EONGMLLJMOC.BFOJNMONLME.OMNENJEOEDC read in CActorNpcAction::InitNpc",
+]
+
 [EIAGJCDKCEN]
 name = "synthesisTextName"
 status = "suggested"
@@ -354,15 +774,8 @@ anchor = "Pet_Data/3"
 score = 33.0
 evidence = [
   "synthesisTextName <- ui text: Pet_Data.EIAGJCDKCEN shown in TextName/SynthesisTextName, HeadMove/CharacterName, CUIAreaMapPoint/Text_LocalName (33 records)",
-]
-
-[MLALGFLOAFN]
-name = "localName"
-status = "suggested"
-anchor = "Map_Data/12"
-score = 21.0
-evidence = [
-  "localName <- ui: Map_Data.MLALGFLOAFN <- CUIAreaMapPoint/Text_LocalName [ResetType_Week, WorldMap_DetailInfo_NotItem], 34 records, 62% precise, e.g. Map_Data[42] \"Underground Shrine B2\" -> \"Underground Shrine B2\"",
+  "code: EONGMLLJMOC.FLNFLOGHBGK.EIAGJCDKCEN read in CUIPetInfo::Set -> CUIPetStatSlot::Set, System.Collections.Generic.Dictionary<FMMMEMCIFJF.LNGMDKHLBEG.LFOHLNNOFDC,System.Int32>::ContainsKey, System.Collections.Generic.Dictionary<FMMMEMCIFJF.LNGMDKHLBEG.LFOHLNNOFDC,System.Int32>::Add",
+  "code: EONGMLLJMOC.FLNFLOGHBGK.EIAGJCDKCEN read in CUIPetAwaken::InitData -> CUIPetAwaken.KLEBNDIBANF::JKPMOENOEGI, System.Collections.Generic.List<Protocol.PetInfo>::Find",
 ]
 
 [DKHIKJGILMK]
@@ -381,6 +794,8 @@ anchor = "Buff/7"
 score = 14.0
 evidence = [
   "skillName <- ui text: Buff.LKHJBJNDPBM shown in Views/Txt_SkillName, Slot/Text_Tittle, Skill_Slot/Text_SkillName (14 records)",
+  "code: EONGMLLJMOC.PIBKAHGPPCM.LKHJBJNDPBM read in CUINpcRandomBuffDetailInfo::SetBuff, strings ['UI_HUD_Icon_Buff_01'] -> CUINpcRandomBuffDetailInfo::PPDFHEAKNBF, UIListView::ReleaseAllObject, System.Collections.Generic.List<FMMMEMCIFJF.LNGMDKHLBEG.LFOHLNNOFDC>::GetEnumerator",
+  "code: EONGMLLJMOC.PIBKAHGPPCM.LKHJBJNDPBM read in CUINpcRandomBuffSlot::SetBuffInfo, strings ['UI_HUD_Icon_Buff_01'] -> CUINpcRandomBuffSlot::PPDFHEAKNBF, UIListView::ReleaseAllObject, System.Collections.Generic.List<FMMMEMCIFJF.LNGMDKHLBEG.LFOHLNNOFDC>::GetEnumerator",
 ]
 
 [OKKPOFCJDKP]
@@ -390,6 +805,8 @@ anchor = "Store/13/0"
 score = 11.0
 evidence = [
   "limitInfo2 <- ui: Store.AJANFPMPJBN.OKKPOFCJDKP <- Limit_Info/Text_LimitInfo [Remain_UI_Reset_InitUntil, Store_UI_TermsDetail], 11 records, 100% precise, e.g. Store[501020045] \"Costume Package\" -> \"Daily Limit per Account\nby Server 0/2\"",
+  "code: EONGMLLJMOC.BDPMDBECBDH.OKKPOFCJDKP read in CUIStoreWindow::UpdateProductInfo, strings ['UI_Remain_TimeOut', '{0}/{1}', '#2BADFF'] -> CUIStoreWindow::GetStoreItem, CUIStoreWindow::GetSequenceItem, System.Nullable<System.Int32>::get_Value",
+  "code: EONGMLLJMOC.BDPMDBECBDH.OKKPOFCJDKP read in CInAppPurchasSDK_Wemix::StoreLocalProductPrice, strings ['$0.0f', '$'] -> System.Single::ToString, System.String::Concat",
 ]
 
 [GNIEIGKNAPO]
@@ -399,6 +816,8 @@ anchor = "Store/1"
 score = 11.0
 evidence = [
   "limitInfo2 <- ui: Store.GNIEIGKNAPO <- Limit_Info/Text_LimitInfo [Remain_UI_Reset_InitUntil, Store_UI_TermsDetail], 11 records, 100% precise, e.g. Store[501020045] \"Costume Package\" -> \"Daily Limit per Account\nby Server 0/2\"",
+  "code: EONGMLLJMOC.HKEKAOBFAHO.GNIEIGKNAPO read in CUIItemSourcePopupSlot::SetData, strings ['UI_HUD_Icon_SideTab_Shop'] -> EONGMLLJMOC.HKEKAOBFAHO::IALOIINOLAK, UnityEngine.GameObject::SetActive, BGDILIPHLBO::MACKHJDJBLG",
+  "code: EONGMLLJMOC.HKEKAOBFAHO.GNIEIGKNAPO read in CUIStoreWindow::IsStoreWorldLimitProduct",
 ]
 
 [EKNOADHNCBJ]
@@ -408,18 +827,7 @@ anchor = "Store/18/0"
 score = 9.0
 evidence = [
   "goodsValue <- ui: Store.GPGOGAFJKMB[].EKNOADHNCBJ <- Goods_Body/Text_GoodsValue [Remain_UI_Reset_InitUntil], 9 records, 100% precise, e.g. Store[501020045] \"Costume Package\" -> \"100\"",
-]
-
-[CJFLEJEPHKM]
-name = "mapName"
-status = "suggested"
-anchor = "Map_Data/19"
-score = 3.2
-evidence = [
-  "conflict: evidence also suggests fXTextArea",
-  "mapName <- ui: Map_Data.CJFLEJEPHKM <- MapInfo/Map_Name, 4 records, 80% precise, e.g. Map_Data[40] \"Ancient Labyrinth B3\" -> \"Ancient Labyrinth B3\"",
-  "mapName <- ui: Map_Data.CJFLEJEPHKM <- BattleType/Text_MapName [BT_PRECAUSION], 4 records, 80% precise, e.g. Map_Data[40] \"Ancient Labyrinth B3\" -> \"Ancient Labyrinth B3\"",
-  "fXTextArea <- ui: Map_Data.CJFLEJEPHKM <- FX_Move/FX_Text_Area, 4 records, 80% precise, e.g. Map_Data[40] \"Ancient Labyrinth B3\" -> \"Ancient Labyrinth B3\"",
+  "code: EONGMLLJMOC.JCJHMCDLIID.EKNOADHNCBJ read in CUIStoreWindow_LockerBox_Popup_LockerItemSlot::SetData -> NCHJBGLIBDP::.ctor",
 ]
 
 [GEDDELKHAMI]
@@ -429,4 +837,6 @@ anchor = "Dealing_Reward/3"
 score = 2.5
 evidence = [
   "teleportCount <- ui values: Pet_Data.GEDDELKHAMI holds all 5 values of Btn_Teleport/Text_TeleportCount (86 distinct in column)",
+  "code: EONGMLLJMOC.PBPILHNPEHK.GEDDELKHAMI read in CUIUltimateSynthesis::InitData -> CUIUltimateSynthesis.LHAKKKJINIA::DFJGHJGHCPB, System.Collections.Generic.List<KAKBIKGBGHA>::FindIndex, System.Collections.Generic.List<KAKBIKGBGHA>::Add",
+  "code: EONGMLLJMOC.PBPILHNPEHK.GEDDELKHAMI read in CUICostumeSynthesis::InitData -> CUICostumeSynthesis.PHPJKFMCJFL::DFJGHJGHCPB, System.Collections.Generic.List<OGJLALHGNON>::FindIndex, System.Collections.Generic.List<OGJLALHGNON>::Add",
 ]
