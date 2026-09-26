@@ -49,6 +49,10 @@ each other**: obfuscated names, code addresses and slots change every build.
   `LocalName` (id → text) and `Localization` (UI key → text) (`decode`).
 - `schema.json` — every column with type, offset and hints: `id`, `enum`,
   `fk <Table>`, `asset <Prefix>*`, `text`, `datetime`, `sharedWith` (`schema`).
+  Also whether it is named yet: `naming` is the `names.toml` status
+  (`confirmed` / `tentative` / `suggested`, with the readable `name`),
+  `obfuscated` (no entry yet) or `plaintext`; each table counts its columns
+  per status. Re-run `schema` after editing `names.toml`.
 - `traces/` — imported UI traces, kept across runs; `evidence.json` — what
   `uitrace` matched in them.
 - `xref.json` — per field of every type a table row reaches: the methods

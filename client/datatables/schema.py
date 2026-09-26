@@ -9,6 +9,14 @@ its declared type, offset and value-derived hints. Field names stay obfuscated
   text       free text / datetime strings
   sharedWith other tables using the same obfuscated name — the obfuscator maps
              one original identifier to one name per build
+
+and, from names.toml, whether each column is named yet:
+
+  name       the readable name `decode` can apply
+  naming     "confirmed" / "tentative" / "suggested" (the names.toml status),
+             "obfuscated" (no entry yet) or "plaintext" (never obfuscated)
+
+Each table gets `naming` counts too: how much of it is still to be named.
 """
 
 from __future__ import annotations
@@ -17,7 +25,9 @@ import collections
 import json
 import re
 
+from .code import obfuscated
 from .dump import Dump, elem_type
+from .names import Entry
 
 FK_MIN_DISTINCT = 20  # below this, small key sets (1..5) match by accident
 FK_MIN_COVERAGE = 0.95
@@ -157,8 +167,21 @@ def annotate_shared(cols: list[dict], usage: dict, table: str) -> None:
             annotate_shared(c["fields"], usage, table)
 
 
-def build(dump: Dump, runtime: dict) -> tuple[dict, collections.Counter, list[str]]:
-    """-> (schema by table, stats, tables missing from the dump)."""
+def annotate_names(cols: list[dict], entries: dict[str, Entry], counts: collections.Counter) -> None:
+    for c in cols:
+        entry = entries.get(c["field"])
+        if entry:
+            c["name"], c["naming"] = entry.name, entry.status
+        else:
+            c["naming"] = "obfuscated" if obfuscated(c["field"]) else "plaintext"
+        counts[c["naming"]] += 1
+        if "fields" in c:
+            annotate_names(c["fields"], entries, counts)
+
+
+def build(dump: Dump, runtime: dict, entries: dict[str, Entry] | None = None) -> tuple[dict, collections.Counter, list[str]]:
+    """-> (schema by table, stats, tables missing from the dump). `entries`
+    is names.toml: each column's readable name and naming status."""
     b = Builder(dump, runtime)
     schema, missing = {}, []
     for name, rt in runtime.items():
@@ -169,4 +192,9 @@ def build(dump: Dump, runtime: dict) -> tuple[dict, collections.Counter, list[st
         schema[name] = b.table(name, meta, rt)
     for name, t in schema.items():
         annotate_shared(t.get("fields", []), b.usage, name)
+        if "fields" in t:
+            counts = collections.Counter()
+            annotate_names(t["fields"], entries or {}, counts)
+            t["naming"] = dict(counts.most_common())
+            b.stats.update({f"naming:{k}": n for k, n in counts.items()})
     return schema, b.stats, missing

@@ -229,7 +229,7 @@ def schema(conf: cfg.Config) -> None:
 
     dump = parse_dump(conf.dump_cs)
     runtime = load_json(conf.runtime, "runtime dump")
-    result, stats, missing = build(dump, runtime)
+    result, stats, missing = build(dump, runtime, names.load(conf.names))
     write_json(conf.schema, result, indent=1)
     print(f"{len(result)} tables ({len(dump.tables)} in dump, {len(runtime)} in runtime) -> {conf.schema}")
     if missing:
